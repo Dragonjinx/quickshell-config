@@ -8,13 +8,13 @@ import Quickshell.DBusMenu
 Item {
     id: root
 
-    implicitWidth: trayRow.implicitWidth + 12
-    height: parent?.implicitHeight ?? 30
+    implicitWidth: Math.max(trayRow.implicitWidth, 20)
+    height: parent ? parent.implicitHeight : 30
 
     Row {
         id: trayRow
         anchors.centerIn: parent
-        spacing: 6
+        spacing: 4
 
         Repeater {
             model: SystemTray.items
@@ -22,14 +22,14 @@ Item {
             delegate: Item {
                 required property SystemTrayItem modelData
 
-                implicitWidth: icon.implicitWidth + 4
+                implicitWidth: icon.implicitWidth + 2
                 implicitHeight: root.height
 
                 IconImage {
                     id: icon
                     anchors.centerIn: parent
-                    implicitSize: 18
-                    source: modelData.icon ?? ""
+                    implicitSize: 16
+                    source: modelData.icon || ""
                 }
 
                 MouseArea {

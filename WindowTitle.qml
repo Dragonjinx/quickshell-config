@@ -8,7 +8,7 @@ Text {
 
     property bool separateOutputs: true
 
-    height: parent?.implicitHeight ?? 30
+    height: parent ? parent.implicitHeight : 30
     verticalAlignment: Text.AlignVCenter
     elide: Text.ElideRight
     font.pixelSize: Theme.barFontSize
@@ -17,7 +17,7 @@ Text {
     text: {
         const toplevel = Hyprland.activeToplevel
         if (!toplevel) return ""
-        const title = toplevel.title ?? ""
+        const title = toplevel.title || ""
 
         // Rewrite patterns (mirroring your waybar config)
         if (title.endsWith(" - Brave")) return title.slice(0, -7)

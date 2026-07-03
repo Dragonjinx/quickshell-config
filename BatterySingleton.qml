@@ -9,11 +9,11 @@ Singleton {
     id: root
 
     readonly property UPowerDevice battery: UPower.battery
-    readonly property real percentage: battery?.percentage ?? -1
-    readonly property bool charging: battery?.state === UPowerDeviceState.Charging
-    readonly property bool pluggedIn: battery?.state === UPowerDeviceState.FullyCharged
+    readonly property real percentage: battery ? battery.percentage : -1
+    readonly property bool charging: battery ? battery.state === UPowerDeviceState.Charging : false
+    readonly property bool pluggedIn: battery ? battery.state === UPowerDeviceState.FullyCharged : false
     readonly property string displayText: {
-        if (percentage < 0) return "—"
+        if (percentage < 0) return "\u2014"
         return Math.round(percentage) + "%"
     }
 
@@ -30,11 +30,10 @@ Singleton {
     property int refreshTimer: 0
 
     Timer {
-        interval: 30000  // refresh every 30s
+        interval: 30000
         running: true
         repeat: true
         onTriggered: {
-            // force re-evaluation of bindings
             root.refreshTimer = root.refreshTimer + 1
         }
     }

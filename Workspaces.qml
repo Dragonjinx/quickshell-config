@@ -7,7 +7,7 @@ Row {
     id: root
 
     spacing: 4
-    height: parent?.implicitHeight ?? 30
+    height: parent ? parent.implicitHeight : 30
 
     Repeater {
         model: Hyprland.workspaces
@@ -31,7 +31,7 @@ Row {
             Text {
                 anchors.centerIn: parent
                 text: modelData.id
-                color: modelData.active ? Theme.background : Theme.onSurface
+                color: modelData.active ? Theme.bg : Theme.textSurf
                 font.pixelSize: Theme.barFontSize
                 font.bold: modelData.active
             }

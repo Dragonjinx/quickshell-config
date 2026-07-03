@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Widgets
+import Quickshell.Networking
 
 // Network status widget — shows wifi signal or ethernet indicator.
 // Maintains consistent layout width regardless of connection state.
@@ -8,9 +9,8 @@ import Quickshell.Widgets
 Item {
     id: root
 
-    // Fixed width so the bar doesn't shift when connectivity changes
     implicitWidth: 90
-    height: parent?.implicitHeight ?? 30
+    height: parent ? parent.implicitHeight : 30
 
     readonly property var primaryDevice: {
         const devices = Networking.devices
@@ -23,17 +23,10 @@ Item {
 
     readonly property bool connected: primaryDevice !== null
 
-    readonly property string iconName: {
-        if (!connected) return "network-offline-symbolic"
-        if (primaryDevice.deviceType === DeviceType.Wifi) {
-            const wifi = primaryDevice
-            const strength = wifi.strength ?? 0
-            if (strength < 25) return "network-wireless-signal-weak-symbolic"
-            if (strength < 50) return "network-wireless-signal-ok-symbolic"
-            if (strength < 75) return "network-wireless-signal-good-symbolic"
-            return "network-wireless-signal-excellent-symbolic"
-        }
-        return "network-wired-symbolic"
+    readonly property string iconEmoji: {
+        if (!connected) return "🌐"
+        if (primaryDevice.deviceType === DeviceType.Wifi) return "📶"
+        return "🔌"
     }
 
     Row {
@@ -42,10 +35,10 @@ Item {
         spacing: 6
         opacity: root.connected ? 1.0 : 0.5
 
-        IconImage {
+        Text {
             anchors.verticalCenter: parent.verticalCenter
-            implicitSize: 14
-            source: Quickshell.iconPath(root.iconName)
+            text: root.iconEmoji
+            font.pixelSize: 11
         }
 
         Text {
@@ -54,12 +47,12 @@ Item {
                 if (!root.connected) return "Offline"
                 if (root.primaryDevice.deviceType === DeviceType.Wifi) {
                     const wifi = root.primaryDevice
-                    return (wifi.ssid ?? wifi.name ?? "WiFi") + " " + (wifi.strength ?? 0) + "%"
+                    return (wifi.ssid || wifi.name || "WiFi") + " " + (wifi.strength || 0) + "%"
                 }
                 return "Wired"
             }
             font.pixelSize: Theme.barFontSize
-            color: root.connected ? Theme.barText : Theme.outline
+            color: root.connected ? Theme.barText : Theme.textSurf
             elide: Text.ElideRight
             maximumLineCount: 1
         }

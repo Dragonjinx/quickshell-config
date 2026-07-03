@@ -24,29 +24,7 @@ ShellRoot {
     id: root
 
     // ----------------------------------------------------------
-    // Enable built-in services
-    // ----------------------------------------------------------
-
-    // Pipewire for audio control
-    Pipewire {}
-
-    // UPower for battery status
-    UPower {}
-
-    // NetworkManager integration
-    Networking {
-        backend: NetworkBackendType.NetworkManager
-    }
-
-    // Bluetooth
-    Bluetooth {}
-
-    // System tray (StatusNotifierItem protocol)
-    SystemTray {}
-
-    // Idle inhibitor for Wayland
-    IdleInhibitor {}
-
+    // UI Components
     // ----------------------------------------------------------
     // UI Components
     // ----------------------------------------------------------

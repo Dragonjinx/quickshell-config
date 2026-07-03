@@ -6,18 +6,19 @@ import Quickshell.Widgets
 Item {
     id: root
 
-    implicitWidth: volumeRow.implicitWidth + 12
-    height: parent?.implicitHeight ?? 30
+    implicitWidth: 60
+    height: parent ? parent.implicitHeight : 30
 
     Row {
         id: volumeRow
         anchors.centerIn: parent
         spacing: 6
+        opacity: VolumeSingleton.muted ? 0.5 : 1.0
 
-        IconImage {
+        Text {
             anchors.verticalCenter: parent.verticalCenter
-            implicitSize: 14
-            source: Quickshell.iconPath(VolumeSingleton.iconName)
+            text: VolumeSingleton.muted ? "🔇" : "🔊"
+            font.pixelSize: 11
         }
 
         Text {
@@ -32,7 +33,6 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            // Toggle mute via wpctl
             Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"])
         }
     }

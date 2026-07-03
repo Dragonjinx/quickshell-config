@@ -8,9 +8,9 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property real volume: Pipewire.defaultAudioSink?.audio.volume ?? 0
-    readonly property bool muted: Pipewire.defaultAudioSink?.audio.mute ?? false
-    readonly property string sinkName: Pipewire.defaultAudioSink?.name ?? "—"
+    readonly property real volume: (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) ? Pipewire.defaultAudioSink.audio.volume : 0
+    readonly property bool muted: (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) ? Pipewire.defaultAudioSink.audio.mute : false
+    readonly property string sinkName: (Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.name : "—")
     readonly property string volumePercent: Math.round(volume * 100) + "%"
 
     // Keep the default sink tracked

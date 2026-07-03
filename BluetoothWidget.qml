@@ -9,18 +9,12 @@ import Quickshell.Bluetooth
 Item {
     id: root
 
-    implicitWidth: 60
-    height: parent?.implicitHeight ?? 30
+    implicitWidth: 55
+    height: parent ? parent.implicitHeight : 30
 
     readonly property var adapter: Bluetooth.defaultAdapter
-    readonly property bool enabled: adapter?.enabled ?? false
-    readonly property int deviceCount: adapter ? adapter.devices.length : 0
-
-    readonly property string iconName: {
-        if (!enabled) return "bluetooth-disabled-symbolic"
-        if (deviceCount > 0) return "bluetooth-active-symbolic"
-        return "bluetooth-symbolic"
-    }
+    readonly property bool enabled: adapter ? adapter.enabled : false
+    readonly property int deviceCount: (adapter && adapter.devices) ? adapter.devices.length : 0
 
     Row {
         id: btRow
@@ -28,17 +22,17 @@ Item {
         spacing: 6
         opacity: root.enabled ? 1.0 : 0.5
 
-        IconImage {
+        Text {
             anchors.verticalCenter: parent.verticalCenter
-            implicitSize: 14
-            source: Quickshell.iconPath(root.iconName)
+            text: root.enabled ? "🔵" : "⚪"
+            font.pixelSize: 10
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.enabled ? (root.deviceCount > 0 ? root.deviceCount.toString() : "On") : "Off"
             font.pixelSize: Theme.barFontSize
-            color: root.enabled ? Theme.barText : Theme.outline
+            color: root.enabled ? Theme.barText : Theme.textSurf
         }
     }
 

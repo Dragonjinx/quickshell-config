@@ -36,16 +36,16 @@ Rectangle {
 
             Text {
                 text: entry.name
-                font.pixelSize: Theme.launcherFontSize
+                font.pixelSize: Theme.launchFontSize
                 font.bold: true
-                color: Theme.launcherText
+                color: Theme.launchText
                 elide: Text.ElideRight
             }
 
             Text {
-                text: entry.genericName ?? ""
-                font.pixelSize: Theme.launcherFontSize - 2
-                color: Theme.launcherDim
+                text: entry.genericName || ""
+                font.pixelSize: Theme.launchFontSize - 2
+                color: Theme.launchDim
                 elide: Text.ElideRight
                 visible: entry.genericName !== ""
             }
