@@ -20,6 +20,7 @@ Scope {
             screen: modelData
 
             anchors { top: true; left: true; right: true }
+            margins { top: 6; left: 12; right: 12 }
 
             implicitHeight: 36
             color: "transparent"
@@ -28,15 +29,14 @@ Scope {
 
             Rectangle {
                 anchors.fill: parent
-                anchors.margins: 6
                 radius: 10
                 color: Theme.barBg
 
                 RowLayout {
                     anchors {
                         fill: parent
-                        leftMargin: 8
-                        rightMargin: 8
+                        leftMargin: 12
+                        rightMargin: 12
                     }
                     spacing: 0
 
@@ -45,7 +45,6 @@ Scope {
                         Layout.fillHeight: true
                         spacing: 4
 
-                        LauncherButton { Layout.fillHeight: true }
                         Workspaces { Layout.fillHeight: true }
                     }
 
