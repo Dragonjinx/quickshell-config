@@ -8,7 +8,7 @@ import Quickshell.DBusMenu
 Item {
     id: root
 
-    implicitWidth: Math.max(trayRow.implicitWidth, 20)
+    implicitWidth: Math.max(trayRow.implicitWidth + 16, 40)
 
     Row {
         id: trayRow

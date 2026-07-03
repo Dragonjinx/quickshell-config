@@ -4,26 +4,60 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import QtQuick
 
-// Exposes the default audio sink's volume and mute state.
+// Exposes the default audio sink's volume & mute state,
+// plus the default audio source (mic) mute state.
 Singleton {
     id: root
 
-    readonly property real volume: (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) ? Pipewire.defaultAudioSink.audio.volume : 0
-    readonly property bool muted: (Pipewire.defaultAudioSink && Pipewire.defaultAudioSink.audio) ? Pipewire.defaultAudioSink.audio.mute : false
-    readonly property string sinkName: (Pipewire.defaultAudioSink ? Pipewire.defaultAudioSink.name : "—")
+    // --- Sink (speakers/headphones) ---
+    readonly property var sink: Pipewire.defaultAudioSink
+    readonly property real volume: sink && sink.audio ? sink.audio.volume : 0
+    readonly property bool muted: sink && sink.audio ? sink.audio.muted : false
     readonly property string volumePercent: Math.round(volume * 100) + "%"
 
-    // Keep the default sink tracked
+    // --- Source (mic) ---
+    readonly property var source: Pipewire.defaultAudioSource
+    readonly property bool micMuted: source && source.audio ? source.audio.muted : false
+
+    // Track the sink and source nodes so their .audio properties are valid
     PwObjectTracker {
+        id: sinkTracker
         objects: [ Pipewire.defaultAudioSink ]
     }
 
-    // Cycle through volume icon levels
-    readonly property string iconName: {
-        if (muted) return "audio-volume-muted-symbolic"
-        if (volume < 0.01) return "audio-volume-muted-symbolic"
-        if (volume < 0.33) return "audio-volume-low-symbolic"
-        if (volume < 0.66) return "audio-volume-medium-symbolic"
-        return "audio-volume-high-symbolic"
+    PwObjectTracker {
+        id: sourceTracker
+        objects: [ Pipewire.defaultAudioSource ]
+    }
+
+    // Rebind trackers when the default sink/source changes
+    property var prevSink: null
+    property var prevSource: null
+
+    onSinkChanged: {
+        if (sink !== prevSink) {
+            sinkTracker.objects = [ sink ]
+            prevSink = sink
+        }
+    }
+
+    onSourceChanged: {
+        if (source !== prevSource) {
+            sourceTracker.objects = [ source ]
+            prevSource = source
+        }
+    }
+
+    // Icon helpers
+    readonly property string sinkIcon: {
+        if (muted) return "\uf466"   // nf-fa-volume_off
+        if (volume < 0.01) return "\uf026" // nf-fa-volume_off (same icon)
+        if (volume < 0.33) return "\uf027" // nf-fa-volume_down
+        return "\uf028"               // nf-fa-volume_up
+    }
+
+    readonly property string micIcon: {
+        if (source && source.audio && source.audio.muted) return "\uf131" // nf-fa-microphone_slash
+        return "\uf130"               // nf-fa-microphone
     }
 }

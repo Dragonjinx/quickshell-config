@@ -2,22 +2,27 @@ import QtQuick
 import Quickshell
 
 // Clock display using TimeSingleton with Nerd Font clock icon.
-Row {
+Item {
     id: root
-    spacing: 6
+    implicitWidth: 60
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        font.family: Theme.fontFam
-        text: "\uf017"  // nf-fa-clock
-        color: Theme.barText
-    }
+    Row {
+        anchors.centerIn: parent
+        spacing: 6
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: TimeSingleton.time
-        font.pixelSize: Theme.barFontSize
-        font.bold: true
-        color: Theme.barText
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            font.family: Theme.fontFam
+            text: "\uf017"  // nf-fa-clock
+            color: Theme.barText
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: TimeSingleton.time
+            font.pixelSize: Theme.barFontSize
+            font.bold: true
+            color: Theme.barText
+        }
     }
 }

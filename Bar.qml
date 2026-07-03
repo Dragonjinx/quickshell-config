@@ -64,11 +64,11 @@ Scope {
                     // --- RIGHT ---
                     RowLayout {
                         Layout.fillHeight: true
-                        spacing: 2
+                        spacing: 6
 
                         VolumeWidget { Layout.fillHeight: true }
-                        NetworkWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true }
+                        NetworkWidget { Layout.fillHeight: true }
                         BatteryWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
                         ClockWidget { Layout.fillHeight: true }
