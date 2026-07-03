@@ -8,7 +8,6 @@ Text {
 
     property bool separateOutputs: true
 
-    height: parent ? parent.implicitHeight : 30
     verticalAlignment: Text.AlignVCenter
     elide: Text.ElideRight
     font.pixelSize: Theme.barFontSize

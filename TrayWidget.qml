@@ -9,7 +9,6 @@ Item {
     id: root
 
     implicitWidth: Math.max(trayRow.implicitWidth, 20)
-    height: parent ? parent.implicitHeight : 30
 
     Row {
         id: trayRow

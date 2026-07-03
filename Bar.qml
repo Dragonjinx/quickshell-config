@@ -7,6 +7,7 @@ import Quickshell.Services.SystemTray
 import Quickshell.Networking
 
 // Main bar — a PanelWindow attached to the top of each screen.
+// Uses RowLayout for consistent child sizing.
 Scope {
     id: root
 
@@ -19,53 +20,58 @@ Scope {
             screen: modelData
 
             anchors { top: true; left: true; right: true }
-            margins { top: 6; left: 12; right: 12 }
 
-            exclusiveZone: 36
             implicitHeight: 36
             color: "transparent"
+            exclusionMode: ExclusionMode.Normal
+            exclusiveZone: 36
 
             Rectangle {
                 anchors.fill: parent
+                anchors.margins: 6
                 radius: 10
                 color: Theme.barBg
 
-                Row {
+                RowLayout {
                     anchors {
                         fill: parent
                         leftMargin: 8
                         rightMargin: 8
                     }
+                    spacing: 0
 
                     // --- LEFT ---
-                    Row {
-                        height: parent.height
+                    RowLayout {
+                        Layout.fillHeight: true
                         spacing: 4
-                        LauncherButton { id: appMenu }
-                        Workspaces {}
+
+                        LauncherButton { Layout.fillHeight: true }
+                        Workspaces { Layout.fillHeight: true }
                     }
 
-                    Item { Layout.fillWidth: true; height: 1 }
+                    Item { Layout.fillWidth: true }
 
                     // --- CENTER ---
                     WindowTitle {
                         Layout.fillWidth: true
-                        height: parent.height
+                        Layout.fillHeight: true
+                        Layout.maximumWidth: 400
                         horizontalAlignment: Text.AlignHCenter
                     }
 
-                    Item { Layout.fillWidth: true; height: 1 }
+                    Item { Layout.fillWidth: true }
 
                     // --- RIGHT ---
-                    Row {
-                        height: parent.height
+                    RowLayout {
+                        Layout.fillHeight: true
                         spacing: 2
-                        VolumeWidget {}
-                        NetworkWidget {}
-                        BluetoothWidget {}
-                        BatteryWidget {}
-                        TrayWidget {}
-                        ClockWidget {}
+
+                        VolumeWidget { Layout.fillHeight: true }
+                        NetworkWidget { Layout.fillHeight: true }
+                        BluetoothWidget { Layout.fillHeight: true }
+                        BatteryWidget { Layout.fillHeight: true }
+                        TrayWidget { Layout.fillHeight: true }
+                        ClockWidget { Layout.fillHeight: true }
                     }
                 }
             }

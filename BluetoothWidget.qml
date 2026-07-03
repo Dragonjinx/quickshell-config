@@ -1,31 +1,28 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 import Quickshell.Bluetooth
 
-// Bluetooth status widget — shows connected device count or icon.
-// Maintains consistent layout width regardless of adapter state.
-// When disabled, content is dimmed (opacity 0.5) but spacing stays the same.
+// Bluetooth status widget — Nerd Font icon, dimmed when disabled.
 Item {
     id: root
-
     implicitWidth: 55
-    height: parent ? parent.implicitHeight : 30
 
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool enabled: adapter ? adapter.enabled : false
     readonly property int deviceCount: (adapter && adapter.devices) ? adapter.devices.length : 0
 
+    readonly property string iconNerd: root.enabled ? "\uf294" : "\uf293"  // nf-fa-bluetooth_b / nf-fa-bluetooth
+
     Row {
-        id: btRow
         anchors.centerIn: parent
         spacing: 6
         opacity: root.enabled ? 1.0 : 0.5
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.enabled ? "🔵" : "⚪"
-            font.pixelSize: 10
+            font.family: Theme.fontFam
+            text: root.iconNerd
+            color: root.enabled ? Theme.primary : Theme.textSurf
         }
 
         Text {

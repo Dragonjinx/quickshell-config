@@ -1,25 +1,29 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 
-// Battery widget — shows icon and percentage. Hidden if no battery found.
+// Battery widget — Nerd Font battery icons, hidden if no battery found.
 Item {
     id: root
-
-    visible: BatterySingleton.percentage >= 0
     implicitWidth: 55
-    height: parent ? parent.implicitHeight : 30
+    visible: BatterySingleton.percentage >= 0
+
+    readonly property string iconNerd: BatterySingleton.pluggedIn ? "\uf1e6" :           // nf-fa-plug
+                                        BatterySingleton.charging ? "\uf0e7" :            // nf-fa-bolt
+                                        BatterySingleton.percentage < 15 ? "\uf244" :     // nf-fa-battery_0
+                                        BatterySingleton.percentage < 40 ? "\uf243" :     // nf-fa-battery_1
+                                        BatterySingleton.percentage < 65 ? "\uf242" :     // nf-fa-battery_2
+                                        BatterySingleton.percentage < 90 ? "\uf241" :     // nf-fa-battery_3
+                                                                           "\uf240"        // nf-fa-battery_4
 
     Row {
-        id: batteryRow
         anchors.centerIn: parent
         spacing: 6
-        opacity: root.visible ? 1.0 : 0.0
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: BatterySingleton.pluggedIn ? "🔌" : BatterySingleton.charging ? "⚡" : "🔋"
-            font.pixelSize: 10
+            font.family: Theme.fontFam
+            text: root.iconNerd
+            color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
         }
 
         Text {

@@ -7,7 +7,6 @@ Item {
     id: root
 
     implicitWidth: label.implicitWidth + 20
-    height: parent ? parent.implicitHeight : 30
 
     property bool launcherOpen: false
 

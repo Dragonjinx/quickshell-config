@@ -7,7 +7,6 @@ Row {
     id: root
 
     spacing: 4
-    height: parent ? parent.implicitHeight : 30
 
     Repeater {
         model: Hyprland.workspaces

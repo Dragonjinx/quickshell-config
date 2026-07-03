@@ -1,18 +1,15 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 
-// Clock display using TimeSingleton.
+// Clock display using TimeSingleton with Nerd Font clock icon.
 Row {
     id: root
-
     spacing: 6
-    height: parent ? parent.implicitHeight : 30
 
     Text {
         anchors.verticalCenter: parent.verticalCenter
-        text: "🕐"
-        font.pixelSize: 12
+        font.family: Theme.fontFam
+        text: "\uf017"  // nf-fa-clock
         color: Theme.barText
     }
 

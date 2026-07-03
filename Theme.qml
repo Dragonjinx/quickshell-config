@@ -45,7 +45,7 @@ Singleton {
     readonly property color launchDim:       "#40484d"
 
     // Font
-    readonly property string fontFam:        "Fira Sans"
+    readonly property string fontFam:        "JetBrainsMono Nerd Font"
     readonly property int barFontSize:       13
     readonly property int launchFontSize:    12
 }

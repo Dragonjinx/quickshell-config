@@ -1,60 +1,72 @@
 import QtQuick
 import Quickshell
-import Quickshell.Widgets
 import Quickshell.Networking
 
-// Network status widget — shows wifi signal or ethernet indicator.
-// Maintains consistent layout width regardless of connection state.
-// When offline, content is dimmed (opacity 0.5) but spacing stays the same.
+// Network status widget — shows wifi or ethernet indicator via Nerd Font.
+// Fixed width, dimmed to 0.5 opacity when offline.
 Item {
     id: root
-
     implicitWidth: 90
-    height: parent ? parent.implicitHeight : 30
 
+    // Find the connected network across all devices
     readonly property var primaryDevice: {
         const devices = Networking.devices
         for (let i = 0; i < devices.length; i++) {
             const dev = devices[i]
-            if (dev.activeConnection || dev.state === 100) return dev
+            if (dev.connected) return dev
+        }
+        return null
+    }
+
+    // Find the connected network on the primary device
+    readonly property var connectedNetwork: {
+        if (!primaryDevice) return null
+        const nets = primaryDevice.networks
+        if (!nets) return null
+        for (let i = 0; i < nets.length; i++) {
+            if (nets[i].connected) return nets[i]
         }
         return null
     }
 
     readonly property bool connected: primaryDevice !== null
 
-    readonly property string iconEmoji: {
-        if (!connected) return "🌐"
-        if (primaryDevice.deviceType === DeviceType.Wifi) return "📶"
-        return "🔌"
+    readonly property string iconNerd: {
+        if (!connected) return "\uf127"           // nf-fa-chain_broken
+        if (primaryDevice.type === DeviceType.Wifi) return "\uf1eb"  // nf-fa-wifi
+        return "\uf6ff"                           // nf-fa-ethernet
+    }
+
+    readonly property int signalPct: {
+        if (!connectedNetwork) return 0
+        return Math.round(connectedNetwork.signalStrength * 100)
     }
 
     Row {
-        id: networkRow
         anchors.centerIn: parent
         spacing: 6
         opacity: root.connected ? 1.0 : 0.5
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.iconEmoji
-            font.pixelSize: 11
+            font.family: Theme.fontFam
+            text: root.iconNerd
+            color: root.connected ? Theme.barText : Theme.textSurf
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (!root.connected) return "Offline"
-                if (root.primaryDevice.deviceType === DeviceType.Wifi) {
-                    const wifi = root.primaryDevice
-                    return (wifi.ssid || wifi.name || "WiFi") + " " + (wifi.strength || 0) + "%"
+                if (root.primaryDevice.type === DeviceType.Wifi) {
+                    return (root.connectedNetwork ? root.connectedNetwork.name : "WiFi")
+                         + " " + root.signalPct + "%"
                 }
                 return "Wired"
             }
             font.pixelSize: Theme.barFontSize
             color: root.connected ? Theme.barText : Theme.textSurf
             elide: Text.ElideRight
-            maximumLineCount: 1
         }
     }
 
