@@ -75,6 +75,7 @@ Scope {
 
                     VolumeWidget {}
                     NetworkWidget {}
+                    BluetoothWidget {}
                     BatteryWidget {}
                     TrayWidget {}
                     ClockWidget {}
