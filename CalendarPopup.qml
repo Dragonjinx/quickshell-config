@@ -42,8 +42,16 @@ Item {
 
     PopupWindow {
         id: popup
-        visible: root.open
+        visible: root.open || popup.hovered
         grabFocus: true
+
+        property bool hovered: false
+
+        onVisibleChanged: {
+            if (!visible) {
+                root.open = false
+            }
+        }
 
         anchor.window: root.anchorWindow
         anchor.rect.x: root.anchorWindow
@@ -55,8 +63,11 @@ Item {
         implicitHeight: calendarColumn.implicitHeight + 20
         color: "transparent"
 
-        onVisibleChanged: {
-            if (!visible) root.open = false
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: popup.hovered = true
+            onExited: popup.hovered = false
         }
 
         Rectangle {

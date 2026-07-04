@@ -42,27 +42,26 @@ Scope {
                     }
                     spacing: 0
 
-                    // --- LEFT (15%) ---
+                    // --- LEFT (minimum 15%, grows with content) ---
                     RowLayout {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width * 0.15
+                        Layout.minimumWidth: parent.width * 0.10
                         spacing: 4
 
                         Workspaces { Layout.fillHeight: true }
                     }
 
-                    // --- CENTER (60%) ---
+                    // --- CENTER (fills remaining space) ---
                     WindowTitle {
+                        Layout.fillWidth: true
                         Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width * 0.60
                         horizontalAlignment: Text.AlignHCenter
                     }
 
-                    // --- RIGHT (25%) ---
+                    // --- RIGHT (content-driven, no artificial stretching) ---
                     RowLayout {
                         Layout.fillHeight: true
-                        Layout.preferredWidth: parent.width * 0.25
-                        spacing: 6
+                        spacing: 3
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true }
