@@ -135,27 +135,41 @@ Singleton {
 
     Component.onCompleted: applyMode()
 
-    // --- Auto-detect dark/light mode from dconf ---
+    // --- Auto-detect dark/light mode from dconf (event-driven) ---
+    // Uses dconf watch for real-time updates instead of polling
     Process {
-        id: dconfProc
-        command: ["sh", "-c", "dconf read /org/gnome/desktop/interface/color-scheme 2>/dev/null || echo default"]
+        id: dconfInit
+        command: ["dconf", "read", "/org/gnome/desktop/interface/color-scheme"]
         running: true
 
         stdout: SplitParser {
             onRead: line => {
-                var val = line.trim().replace(/'/g, "")
-                if (val === "prefer-dark") root.setMode("black")
-                else if (val === "prefer-light") root.setMode("white")
-                // if 'default' or unknown, keep matugen
+                applyDconfValue(line)
             }
         }
     }
 
-    // Poll for changes
-    Timer {
-        interval: 5000
+    Process {
+        id: dconfWatch
+        command: ["dconf", "watch", "/org/gnome/desktop/interface/color-scheme"]
         running: true
-        repeat: true
-        onTriggered: { dconfProc.running = true }
+
+        stdout: SplitParser {
+            onRead: line => {
+                // dconf watch outputs lines like:
+                //   (path):  'prefer-dark'
+                // We only care about the value line
+                var trimmed = line.trim()
+                if (trimmed.charAt(0) === "'") {
+                    applyDconfValue(trimmed)
+                }
+            }
+        }
+    }
+
+    function applyDconfValue(val) {
+        val = val.trim().replace(/'/g, "")
+        if (val === "prefer-dark") root.setMode("black")
+        else if (val === "prefer-light") root.setMode("white")
     }
 }
