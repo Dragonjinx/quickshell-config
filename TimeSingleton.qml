@@ -9,15 +9,15 @@ Singleton {
     id: root
 
     readonly property string time: {
-        Qt.formatDateTime(clock.date, "hh:mm AP")
+        Qt.formatDateTime(clock.date, "HH:mm")
     }
 
     readonly property string date: {
-        Qt.formatDateTime(clock.date, "ddd MMM d")
+        Qt.formatDateTime(clock.date, "ddd d MMM")
     }
 
     readonly property string fullDateTime: {
-        Qt.formatDateTime(clock.date, "ddd MMM d  hh:mm:ss AP")
+        Qt.formatDateTime(clock.date, "ddd d MMM yyyy  HH:mm")
     }
 
     SystemClock {

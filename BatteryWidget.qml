@@ -7,14 +7,6 @@ Item {
     implicitWidth: 55
     visible: BatterySingleton.percentage >= 0
 
-    readonly property string iconNerd: BatterySingleton.pluggedIn ? "\uf1e6" :           // nf-fa-plug
-                                        BatterySingleton.charging ? "\uf0e7" :            // nf-fa-bolt
-                                        BatterySingleton.percentage < 15 ? "\uf244" :     // nf-fa-battery_0
-                                        BatterySingleton.percentage < 40 ? "\uf243" :     // nf-fa-battery_1
-                                        BatterySingleton.percentage < 65 ? "\uf242" :     // nf-fa-battery_2
-                                        BatterySingleton.percentage < 90 ? "\uf241" :     // nf-fa-battery_3
-                                                                           "\uf240"        // nf-fa-battery_4
-
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -22,7 +14,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
-            text: root.iconNerd
+            text: BatterySingleton.iconNerd
             color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
         }
 

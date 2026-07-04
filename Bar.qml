@@ -35,6 +35,8 @@ Scope {
                 RowLayout {
                     anchors {
                         fill: parent
+                        topMargin: 4
+                        bottomMargin: 4
                         leftMargin: 12
                         rightMargin: 12
                     }
@@ -70,7 +72,7 @@ Scope {
                         NetworkWidget { Layout.fillHeight: true }
                         BatteryWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
-                        ClockWidget { Layout.fillHeight: true }
+                        ClockWidget { Layout.fillHeight: true; barWindow: barWindow }
                     }
                 }
             }
