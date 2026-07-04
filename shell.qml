@@ -6,28 +6,27 @@ import Quickshell.Services.SystemTray
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 // ============================================================
 // Quickshell configuration entry point
-// ============================================================
-// Replaces Waybar + Rofi with a single QML-based shell.
 //
-// Structure:
-//   shell.qml          → this file (entry point)
-//   bar/Bar.qml        → top bar (PanelWindow per monitor)
-//   launcher/AppLauncher.qml → app launcher (replaces rofi)
-//   singletons/        → shared state (time, volume, battery)
-//   config/Theme.qml   → color palette
+// Hyprland keybinds:
+//   bind = $mainMod CTRL, T, global, quickshell:toggle-theme
 // ============================================================
 
 ShellRoot {
-    id: root
+    // Theme toggle via Hyprland global shortcut
+    GlobalShortcut {
+        name: "toggle-theme"
+        description: "Toggle Quickshell theme (matugen / black / white)"
 
-    // ----------------------------------------------------------
-    // UI Components
-    // ----------------------------------------------------------
-    // UI Components
-    // ----------------------------------------------------------
+        onPressed: {
+            var modes = ["matugen", "black", "white"]
+            var idx = modes.indexOf(Theme.mode)
+            Theme.setMode(modes[(idx + 1) % modes.length])
+        }
+    }
 
     // Top bar (replaces Waybar)
     Bar {}

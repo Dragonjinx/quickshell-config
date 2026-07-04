@@ -3,49 +3,134 @@ pragma Singleton
 import Quickshell
 import QtQuick
 
-// Material You / Matugen-inspired theme based on your existing colors.css
+// Theme with three presets: matugen (default), black, white.
+// Switch via Theme.setMode("black") or Theme.setMode("white").
 Singleton {
-    // Background & Surface
-    readonly property color bg:              "#0f1417"
-    readonly property color surface:         "#1b2023"
-    readonly property color surfCont:        "#262b2e"
-    readonly property color surfBright:      "#353a3d"
+    id: root
 
-    // Text
-    readonly property color textBg:          "#dfe3e7"
-    readonly property color textSurf:        "#dfe3e7"
+    // Current mode name
+    property string mode: "matugen"
 
-    // Accents
-    readonly property color primary:         "#8ecff2"
-    readonly property color primCont:        "#004d67"
-    readonly property color onPrim:          "#003548"
-    readonly property color secondary:       "#b5c9d7"
-    readonly property color tertiary:        "#c9c1ea"
-    readonly property color error:           "#ffb4ab"
+    // Color properties (update when mode changes)
+    property color bg
+    property color surface
+    property color surfCont
+    property color surfBright
+    property color textBg
+    property color textSurf
+    property color primary
+    property color primCont
+    property color onPrim
+    property color secondary
+    property color tertiary
+    property color error
+    property color outline
+    property color outlineVar
+    property color barBg
+    property color barText
+    property color barHover
+    property color wsActive
+    property color wsInactive
+    property color wsUrgent
+    property color launchBg
+    property color launchSurface
+    property color launchSel
+    property color launchText
+    property color launchDim
 
-    // Outlines
-    readonly property color outline:         "#8a9297"
-    readonly property color outlineVar:      "#40484d"
+    readonly property string fontFam: "JetBrainsMono Nerd Font"
+    readonly property int barFontSize: 13
+    readonly property int launchFontSize: 12
 
-    // Bar-specific
-    readonly property color barBg:           "#cc0f1417"
-    readonly property color barText:         "#dfe3e7"
-    readonly property color barHover:        "#353a3d"
+    function setMode(newMode) {
+        root.mode = newMode
+        applyMode()
+    }
 
-    // Workspace colors
-    readonly property color wsActive:        "#8ecff2"
-    readonly property color wsInactive:      "#40484d"
-    readonly property color wsUrgent:        "#ffb4ab"
+    function applyMode() {
+        if (root.mode === "black") {
+            bg              = "#000000"
+            surface         = "#1a1a1a"
+            surfCont        = "#262626"
+            surfBright      = "#333333"
+            textBg          = "#ffffff"
+            textSurf        = "#ffffff"
+            primary         = "#8ecff2"
+            primCont        = "#004d67"
+            onPrim          = "#000000"
+            secondary       = "#b5c9d7"
+            tertiary        = "#c9c1ea"
+            error           = "#ffb4ab"
+            outline         = "#666666"
+            outlineVar      = "#404040"
+            barBg           = "#cc000000"
+            barText         = "#ffffff"
+            barHover        = "#333333"
+            wsActive        = "#8ecff2"
+            wsInactive      = "#333333"
+            wsUrgent        = "#ffb4ab"
+            launchBg        = "#f0000000"
+            launchSurface   = "#1a1a1a"
+            launchSel       = "#8ecff2"
+            launchText      = "#ffffff"
+            launchDim       = "#666666"
 
-    // Launcher colors
-    readonly property color launchBg:        "#f00f1417"
-    readonly property color launchSurface:   "#1b2023"
-    readonly property color launchSel:       "#8ecff2"
-    readonly property color launchText:      "#dfe3e7"
-    readonly property color launchDim:       "#40484d"
+        } else if (root.mode === "white") {
+            bg              = "#ffffff"
+            surface         = "#f5f5f5"
+            surfCont        = "#ebebeb"
+            surfBright      = "#e0e0e0"
+            textBg          = "#000000"
+            textSurf        = "#000000"
+            primary         = "#006494"
+            primCont        = "#c2e8ff"
+            onPrim          = "#ffffff"
+            secondary       = "#4a5d68"
+            tertiary        = "#6b62a0"
+            error           = "#ba1a1a"
+            outline         = "#8a9297"
+            outlineVar      = "#c4c7c9"
+            barBg           = "#ccffffff"
+            barText         = "#000000"
+            barHover        = "#e0e0e0"
+            wsActive        = "#006494"
+            wsInactive      = "#c4c7c9"
+            wsUrgent        = "#ba1a1a"
+            launchBg        = "#f0ffffff"
+            launchSurface   = "#f5f5f5"
+            launchSel       = "#006494"
+            launchText      = "#000000"
+            launchDim       = "#8a9297"
 
-    // Font
-    readonly property string fontFam:        "JetBrainsMono Nerd Font"
-    readonly property int barFontSize:       13
-    readonly property int launchFontSize:    12
+        } else {
+            // matugen (default)
+            bg              = "#0f1417"
+            surface         = "#1b2023"
+            surfCont        = "#262b2e"
+            surfBright      = "#353a3d"
+            textBg          = "#dfe3e7"
+            textSurf        = "#dfe3e7"
+            primary         = "#8ecff2"
+            primCont        = "#004d67"
+            onPrim          = "#003548"
+            secondary       = "#b5c9d7"
+            tertiary        = "#c9c1ea"
+            error           = "#ffb4ab"
+            outline         = "#8a9297"
+            outlineVar      = "#40484d"
+            barBg           = "#cc0f1417"
+            barText         = "#dfe3e7"
+            barHover        = "#353a3d"
+            wsActive        = "#8ecff2"
+            wsInactive      = "#40484d"
+            wsUrgent        = "#ffb4ab"
+            launchBg        = "#f00f1417"
+            launchSurface   = "#1b2023"
+            launchSel       = "#8ecff2"
+            launchText      = "#dfe3e7"
+            launchDim       = "#40484d"
+        }
+    }
+
+    Component.onCompleted: applyMode()
 }
