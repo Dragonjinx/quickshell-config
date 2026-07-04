@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 
-// Gregorian calendar popup that appears below the clock.
-// Uses locale settings for first day of week and date formatting.
+// Simple Gregorian calendar popup — appears below the clock on hover.
+// Non-interactive: just displays the current month grid.
 Item {
     id: root
 
@@ -12,20 +12,11 @@ Item {
     readonly property date today: new Date()
     readonly property int currentMonth: today.getMonth()
     readonly property int currentYear: today.getFullYear()
-
     readonly property int firstDayOfWeek: 1  // Monday
 
-    property int viewMonth: currentMonth
-    property int viewYear: currentYear
-
-    function resetView() {
-        viewMonth = currentMonth
-        viewYear = currentYear
-    }
-
-    readonly property int daysInMonth: new Date(viewYear, viewMonth + 1, 0).getDate()
+    readonly property int daysInMonth: new Date(currentYear, currentMonth + 1, 0).getDate()
     readonly property int firstDayOffset: {
-        const d = new Date(viewYear, viewMonth, 1).getDay()
+        const d = new Date(currentYear, currentMonth, 1).getDay()
         return (d - firstDayOfWeek + 7) % 7
     }
 
@@ -34,16 +25,12 @@ Item {
         "July", "August", "September", "October", "November", "December"
     ]
 
-    readonly property var dayHeaders: firstDayOfWeek === 1
-        ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sun"]
+    readonly property var dayHeaders: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
     PopupWindow {
         id: popup
-        visible: root.open || popup.selfHovered
+        visible: root.open
         grabFocus: false
-
-        property bool selfHovered: false
 
         anchor.window: root.anchorWindow
         anchor.rect.x: root.anchorWindow
@@ -55,23 +42,12 @@ Item {
         implicitHeight: calendarColumn.implicitHeight + 20
         color: "transparent"
 
-        onVisibleChanged: {
-            if (!visible) root.open = false
-        }
-
         Rectangle {
             anchors.fill: parent
             radius: 10
             color: Theme.surface
             border.color: Theme.outlineVar
             border.width: 1
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: popup.selfHovered = true
-                onExited: popup.selfHovered = false
-            }
 
             Column {
                 id: calendarColumn
@@ -81,53 +57,17 @@ Item {
                 }
                 spacing: 8
 
-                Row {
+                // Month/year header
+                Text {
                     width: parent.width
-                    spacing: 8
-
-                    Text {
-                        text: "\uf053"
-                        font.family: Theme.fontFam
-                        color: Theme.barText
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.viewMonth--
-                                if (root.viewMonth < 0) {
-                                    root.viewMonth = 11
-                                    root.viewYear--
-                                }
-                            }
-                        }
-                    }
-
-                    Text {
-                        text: monthNames[root.viewMonth] + " " + root.viewYear
-                        font.pixelSize: 14
-                        font.bold: true
-                        color: Theme.barText
-                        horizontalAlignment: Text.AlignHCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 60
-                    }
-
-                    Text {
-                        text: "\uf054"
-                        font.family: Theme.fontFam
-                        color: Theme.barText
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.viewMonth++
-                                if (root.viewMonth > 11) {
-                                    root.viewMonth = 0
-                                    root.viewYear++
-                                }
-                            }
-                        }
-                    }
+                    text: monthNames[root.currentMonth] + " " + root.currentYear
+                    font.pixelSize: 14
+                    font.bold: true
+                    color: Theme.barText
+                    horizontalAlignment: Text.AlignHCenter
                 }
 
+                // Day-of-week headers
                 Row {
                     width: parent.width
                     spacing: 2
@@ -145,6 +85,7 @@ Item {
                     }
                 }
 
+                // Calendar grid
                 Grid {
                     columns: 7
                     columnSpacing: 2
@@ -164,8 +105,6 @@ Item {
 
                             readonly property int day: index + 1
                             readonly property bool isToday: day === root.today.getDate()
-                                                           && root.viewMonth === root.currentMonth
-                                                           && root.viewYear === root.currentYear
 
                             width: (parent.width - 12) / 7
                             height: 24
@@ -179,21 +118,10 @@ Item {
                                 font.bold: isToday
                                 color: isToday ? Theme.onPrim : Theme.barText
                             }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    root.open = false
-                                }
-                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    onOpenChanged: {
-        if (open) resetView()
     }
 }
