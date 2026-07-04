@@ -2,10 +2,13 @@ import QtQuick
 import Quickshell
 
 // Battery widget — Nerd Font battery icons, hidden if no battery found.
+// Click: toggles between percentage and estimated time remaining.
 Item {
     id: root
     implicitWidth: contentRow.implicitWidth + 12
     visible: BatterySingleton.percentage >= 0
+
+    property bool showTime: false
 
     Row {
         id: contentRow
@@ -21,7 +24,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: BatterySingleton.displayText
+            text: root.showTime ? BatterySingleton.timeRemainingText : BatterySingleton.displayText
             font.pixelSize: Theme.barFontSize
             color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
         }
@@ -30,8 +33,6 @@ Item {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            Quickshell.execDetached(["alacritty", "-e", "btop"])
-        }
+        onClicked: root.showTime = !root.showTime
     }
 }
