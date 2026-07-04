@@ -53,9 +53,10 @@ Row {
             Behavior on color { ColorAnimation { duration: 100 } }
             Behavior on radius { NumberAnimation { duration: 100 } }
 
-            // Animate width when active state changes
+            // Animate width smoothly in both directions
             onIsActiveChanged: {
-                extraPadAnim.to = isActive ? 8 : 0
+                extraPadAnim.stop()
+                extraPadAnim.to = isActive ? 14 : 0
                 extraPadAnim.start()
             }
 
