@@ -28,6 +28,7 @@ Scope {
             exclusiveZone: 36
 
             Rectangle {
+                id: barContent
                 anchors.fill: parent
                 radius: 10
                 color: Theme.barBg
@@ -65,7 +66,7 @@ Scope {
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true }
-                        NetworkWidget { Layout.fillHeight: true; barWindow: barWindow }
+                        NetworkWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
                         BatteryWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
                         PowerMenuWidget { Layout.fillHeight: true }

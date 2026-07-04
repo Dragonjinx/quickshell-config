@@ -12,6 +12,7 @@ Item {
     id: root
     implicitWidth: contentRow.implicitWidth + 12
     required property var barWindow
+    required property var barContent
 
     // --- Connected device detection via hidden Repeater ---
     property bool connected: false
@@ -86,11 +87,9 @@ Item {
         grabFocus: false
 
         anchor.window: root.barWindow
-        anchor.rect.x: {
-            // Position near the right edge, roughly where this widget sits
-            if (!root.barWindow) return 0
-            return root.barWindow.width - tooltip.implicitWidth - 12
-        }
+        anchor.rect.x: root.barContent
+            ? root.mapToItem(root.barContent, root.width / 2, 0).x - tooltip.implicitWidth / 2
+            : 0
         anchor.rect.y: root.barWindow ? root.barWindow.height + 4 : 0
 
         implicitWidth: Math.min(nameText.implicitWidth + 24, 300)
