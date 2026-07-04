@@ -6,9 +6,12 @@ import Quickshell.Networking
 // Network status widget — shows wifi or ethernet indicator via Nerd Font.
 // Uses a hidden Repeater to iterate Networking.devices (ObjectModel),
 // and a Process to get the active connection name from nmcli.
+//
+// Default: icon + signal strength. Hover: popup with network name.
 Item {
     id: root
     implicitWidth: 90
+    required property var barWindow
 
     // --- Connected device detection via hidden Repeater ---
     property bool connected: false
@@ -26,7 +29,7 @@ Item {
                 onModelDataChanged: {
                     if (modelData && modelData.connected) {
                         root.connected = true
-                        root.isWifi = modelData.type === 1  // 1 = Wifi
+                        root.isWifi = modelData.type === 1
                     }
                 }
 
@@ -57,7 +60,6 @@ Item {
         }
     }
 
-    // Refresh network info every 10 seconds
     Timer {
         interval: 10000
         running: true
@@ -75,8 +77,44 @@ Item {
         return "\uf6ff"                             // nf-fa-ethernet
     }
 
+    // --- Tooltip popup ---
     property bool hovered: false
 
+    PopupWindow {
+        id: tooltip
+        visible: root.hovered && root.connected && root.isWifi
+        grabFocus: false
+
+        anchor.window: root.barWindow
+        anchor.rect.x: {
+            // Position near the right edge, roughly where this widget sits
+            if (!root.barWindow) return 0
+            return root.barWindow.width - tooltip.implicitWidth - 12
+        }
+        anchor.rect.y: root.barWindow ? root.barWindow.height + 4 : 0
+
+        implicitWidth: Math.min(nameText.implicitWidth + 24, 300)
+        implicitHeight: 28
+        color: "transparent"
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 6
+            color: Theme.surface
+            border.color: Theme.outlineVar
+            border.width: 1
+
+            Text {
+                id: nameText
+                anchors.centerIn: parent
+                text: root.netName || "WiFi"
+                font.pixelSize: Theme.barFontSize
+                color: Theme.barText
+            }
+        }
+    }
+
+    // --- Main content ---
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -89,18 +127,15 @@ Item {
             color: root.connected ? Theme.barText : Theme.textSurf
         }
 
-        // Default: signal strength. On hover: network name.
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (!root.connected) return "Offline"
-                if (root.hovered && root.isWifi) return root.netName || "WiFi"
                 if (root.isWifi) return root.signalPct + "%"
                 return "Wired"
             }
             font.pixelSize: Theme.barFontSize
             color: root.connected ? Theme.barText : Theme.textSurf
-            elide: Text.ElideRight
         }
     }
 

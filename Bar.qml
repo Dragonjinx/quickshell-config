@@ -69,7 +69,7 @@ Scope {
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true }
-                        NetworkWidget { Layout.fillHeight: true }
+                        NetworkWidget { Layout.fillHeight: true; barWindow: barWindow }
                         BatteryWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
                         PowerMenuWidget { Layout.fillHeight: true }
