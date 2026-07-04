@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 
 // Workspace buttons — always shows 1-5 plus a 6th overflow box for any workspace > 5.
+// Animation: 100ms transitions on opacity and color, matching Waybar's behaviour.
 Row {
     id: root
     spacing: 4
@@ -30,19 +31,25 @@ Row {
             readonly property var ws: root.wsMap[modelData]
             readonly property bool isActive: root.activeWs ? root.activeWs.id === modelData : false
             readonly property bool isUrgent: ws ? ws.urgent : false
+            property bool hovered: false
 
             width: 32
             height: parent.height
-            radius: 4
+            radius: hovered ? 5 : 4
             color: {
                 if (isUrgent) return Theme.wsUrgent
                 if (isActive) return Theme.wsActive
                 return Theme.wsInactive
             }
-            opacity: isActive ? 1.0 : 0.6
+            opacity: {
+                if (isActive) return 1.0
+                if (hovered) return 0.7
+                return 0.5
+            }
 
             Behavior on opacity { NumberAnimation { duration: 100 } }
             Behavior on color { ColorAnimation { duration: 100 } }
+            Behavior on radius { NumberAnimation { duration: 100 } }
 
             Text {
                 anchors.centerIn: parent
@@ -56,6 +63,8 @@ Row {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
+                onEntered: parent.hovered = true
+                onExited: parent.hovered = false
                 onClicked: {
                     Hyprland.dispatch("workspace " + modelData)
                 }
@@ -63,41 +72,37 @@ Row {
         }
     }
 
-    // 6th overflow box — shows active workspace > 5, or a "+" if none active
+    // 6th overflow box — only visible when a workspace > 5 is active
     Rectangle {
         width: 32
         height: parent.height
-        radius: 4
-
-        readonly property bool hasAnyOverflow: {
-            const wss = Hyprland.workspaces
-            if (!wss) return false
-            for (let i = 0; i < wss.length; i++) {
-                if (wss[i].id > 5) return true
-            }
-            return false
-        }
+        visible: root.activeWs && root.activeWs.id > 5
 
         readonly property var overflowActive: root.activeWs && root.activeWs.id > 5 ? root.activeWs : null
+        property bool hovered: false
 
-        color: overflowActive ? Theme.wsActive : (hasAnyOverflow ? Theme.wsInactive : Theme.wsInactive)
-        opacity: overflowActive ? 1.0 : (hasAnyOverflow ? 0.6 : 0.3)
+        color: Theme.wsActive
+        radius: hovered ? 5 : 4
+        opacity: hovered ? 0.7 : 1.0
 
         Behavior on opacity { NumberAnimation { duration: 100 } }
         Behavior on color { ColorAnimation { duration: 100 } }
+        Behavior on radius { NumberAnimation { duration: 100 } }
 
         Text {
             anchors.centerIn: parent
             text: parent.overflowActive ? parent.overflowActive.id : "+"
-            color: parent.overflowActive ? Theme.bg : Theme.textSurf
+            color: Theme.bg
             font.pixelSize: Theme.barFontSize
-            font.bold: parent.overflowActive !== null
+            font.bold: true
         }
 
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
+            onEntered: parent.hovered = true
+            onExited: parent.hovered = false
             onClicked: {
                 Hyprland.dispatch("workspace 6")
             }
