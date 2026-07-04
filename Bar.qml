@@ -42,29 +42,26 @@ Scope {
                     }
                     spacing: 0
 
-                    // --- LEFT ---
+                    // --- LEFT (15%) ---
                     RowLayout {
                         Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width * 0.15
                         spacing: 4
 
                         Workspaces { Layout.fillHeight: true }
                     }
 
-                    Item { Layout.fillWidth: true }
-
-                    // --- CENTER ---
+                    // --- CENTER (60%) ---
                     WindowTitle {
-                        Layout.fillWidth: true
                         Layout.fillHeight: true
-                        Layout.maximumWidth: 400
+                        Layout.preferredWidth: parent.width * 0.60
                         horizontalAlignment: Text.AlignHCenter
                     }
 
-                    Item { Layout.fillWidth: true }
-
-                    // --- RIGHT ---
+                    // --- RIGHT (25%) ---
                     RowLayout {
                         Layout.fillHeight: true
+                        Layout.preferredWidth: parent.width * 0.25
                         spacing: 6
 
                         VolumeWidget { Layout.fillHeight: true }
