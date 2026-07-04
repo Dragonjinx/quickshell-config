@@ -33,7 +33,7 @@ Row {
             readonly property bool isUrgent: ws ? ws.urgent : false
             property bool hovered: false
 
-            width: 32
+            implicitWidth: txt.implicitWidth + 16
             height: parent.height
             radius: hovered ? 5 : 4
             color: {
@@ -46,30 +46,16 @@ Row {
                 if (hovered) return 0.7
                 return 0.5
             }
-            scale: isActive ? 1.0 : 1.0
 
             Behavior on opacity { NumberAnimation { duration: 100 } }
             Behavior on color { ColorAnimation { duration: 100 } }
             Behavior on radius { NumberAnimation { duration: 100 } }
+            scale: isActive ? 1.15 : 1.0
 
-            // Pop animation when becoming active
-            onIsActiveChanged: {
-                if (isActive) {
-                    scale = 1.15
-                    popBack.start()
-                }
-            }
-
-            NumberAnimation {
-                id: popBack
-                target: parent
-                property: "scale"
-                to: 1.0
-                duration: 150
-                easing.type: Easing.OutBack
-            }
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
 
             Text {
+                id: txt
                 anchors.centerIn: parent
                 text: modelData
                 color: isActive ? Theme.bg : Theme.textSurf
@@ -92,7 +78,7 @@ Row {
 
     // 6th overflow box — only visible when a workspace > 5 is active
     Rectangle {
-        width: 32
+        implicitWidth: overflowTxt.implicitWidth + 16
         height: parent.height
         visible: root.activeWs && root.activeWs.id > 5
 
@@ -108,6 +94,7 @@ Row {
         Behavior on radius { NumberAnimation { duration: 100 } }
 
         Text {
+            id: overflowTxt
             anchors.centerIn: parent
             text: parent.overflowActive ? parent.overflowActive.id : "+"
             color: Theme.bg
