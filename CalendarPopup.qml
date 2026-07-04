@@ -46,7 +46,9 @@ Item {
         grabFocus: true
 
         anchor.window: root.anchorWindow
-        anchor.rect.x: root.anchorWindow ? root.anchorWindow.width / 2 - popup.implicitWidth / 2 : 0
+        anchor.rect.x: root.anchorWindow
+            ? root.anchorWindow.width - popup.implicitWidth
+            : 0
         anchor.rect.y: root.anchorWindow ? root.anchorWindow.height + 4 : 0
 
         implicitWidth: 260

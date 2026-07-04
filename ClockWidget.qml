@@ -19,13 +19,6 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            font.family: Theme.fontFam
-            text: "\uf017"  // nf-fa-clock-o
-            color: Theme.barText
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
             text: TimeSingleton.time
             font.pixelSize: Theme.barFontSize
             font.bold: true
