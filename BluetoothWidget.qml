@@ -12,7 +12,7 @@ Item {
     readonly property bool enabled: adapter ? adapter.enabled : false
     readonly property int deviceCount: (adapter && adapter.devices) ? adapter.devices.length : 0
 
-    readonly property string iconNerd: root.enabled ? "\uf294" : "\uf293"  // nf-fa-bluetooth_b / nf-fa-bluetooth
+    readonly property string iconNerd: root.enabled ? "\uf0909" : "\uf0ab2"  // nf-mdi-bluetooth_connect / nf-mdi-bluetooth_off
 
     Text {
         id: iconText

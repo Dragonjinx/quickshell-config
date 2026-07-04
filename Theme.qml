@@ -39,7 +39,7 @@ Singleton {
     property color launchText
     property color launchDim
 
-    readonly property string fontFam: "JetBrainsMono Nerd Font Mono"
+    readonly property string fontFam: "BlexMono Nerd Font"
     readonly property int barFontSize: 13
     readonly property int launchFontSize: 12
 
