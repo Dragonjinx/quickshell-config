@@ -2,8 +2,8 @@ import QtQuick
 import Quickshell
 
 // Clock display — shows 24h time by default.
+// Click: toggles between time and date (DD-MM-YYYY).
 // Hover: shows the Gregorian calendar popup.
-// Click: shows the full date (DD-MM-YYYY) for 3 seconds.
 Item {
     id: root
     implicitWidth: 55
@@ -15,21 +15,11 @@ Item {
         open: mouseArea.containsMouse
     }
 
-    // Date display on click
+    // Toggle between time and date on click
     property bool showDate: false
 
-    function showDateTemporarily() {
-        showDate = true
-        dateTimer.restart()
-    }
-
-    Timer {
-        id: dateTimer
-        interval: 3000
-        onTriggered: root.showDate = false
-    }
-
-    readonly property string fullDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy")
+    readonly property string displayTime: TimeSingleton.time
+    readonly property string displayDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy")
 
     Row {
         anchors.centerIn: parent
@@ -37,7 +27,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: root.showDate ? root.fullDate : TimeSingleton.time
+            text: root.showDate ? root.displayDate : root.displayTime
             font.pixelSize: Theme.barFontSize
             font.bold: true
             color: Theme.barText
@@ -49,6 +39,6 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.showDateTemporarily()
+        onClicked: root.showDate = !root.showDate
     }
 }
