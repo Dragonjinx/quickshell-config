@@ -3,9 +3,10 @@ import Quickshell
 import Quickshell.Bluetooth
 
 // Bluetooth status widget — Nerd Font icon, dimmed when disabled.
+// Icons match Waybar: 󰂱 connected, 󰂲 disabled/off
 Item {
     id: root
-    implicitWidth: contentRow.implicitWidth + 12
+    implicitWidth: iconText.implicitWidth + 12
 
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool enabled: adapter ? adapter.enabled : false
@@ -13,25 +14,13 @@ Item {
 
     readonly property string iconNerd: root.enabled ? "\uf294" : "\uf293"  // nf-fa-bluetooth_b / nf-fa-bluetooth
 
-    Row {
-        id: contentRow
+    Text {
+        id: iconText
         anchors.centerIn: parent
-        spacing: 6
+        font.family: Theme.fontFam
+        text: root.iconNerd
+        color: root.enabled ? Theme.primary : Theme.textSurf
         opacity: root.enabled ? 1.0 : 0.5
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            font.family: Theme.fontFam
-            text: root.iconNerd
-            color: root.enabled ? Theme.primary : Theme.textSurf
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.enabled ? (root.deviceCount > 0 ? root.deviceCount.toString() : "On") : "Off"
-            font.pixelSize: Theme.barFontSize
-            color: root.enabled ? Theme.barText : Theme.textSurf
-        }
     }
 
     MouseArea {

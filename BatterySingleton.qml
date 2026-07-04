@@ -112,7 +112,7 @@ Singleton {
     readonly property string iconNerd: {
         if (percentage < 0) return ""
         if (pluggedIn) return "\uf1e6"         // nf-fa-plug
-        if (charging) return "\uf0e7"          // nf-fa-bolt
+        if (charging) return "\uf04e6"          // nf-mdi-battery_charging_100
         if (percentage < 15) return "\uf244"   // nf-fa-battery_0
         if (percentage < 40) return "\uf243"   // nf-fa-battery_1
         if (percentage < 65) return "\uf242"   // nf-fa-battery_2
