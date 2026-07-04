@@ -1,45 +1,78 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Networking
 
 // Network status widget — shows wifi or ethernet indicator via Nerd Font.
-// Fixed width, dimmed to 0.5 opacity when offline.
+// Uses a hidden Repeater to iterate Networking.devices (ObjectModel),
+// and a Process to get the active connection name from nmcli.
 Item {
     id: root
     implicitWidth: 90
 
-    // Find the connected network across all devices
-    readonly property var primaryDevice: {
-        const devices = Networking.devices
-        for (let i = 0; i < devices.length; i++) {
-            const dev = devices[i]
-            if (dev.connected) return dev
+    // --- Connected device detection via hidden Repeater ---
+    property bool connected: false
+    property bool isWifi: false
+    property string netName: ""
+    property int signalPct: 0
+
+    Item {
+        Repeater {
+            model: Networking.devices
+
+            delegate: Item {
+                required property var modelData
+
+                onModelDataChanged: {
+                    if (modelData && modelData.connected) {
+                        root.connected = true
+                        root.isWifi = modelData.type === 1  // 1 = Wifi
+                    }
+                }
+
+                Component.onCompleted: {
+                    if (modelData && modelData.connected) {
+                        root.connected = true
+                        root.isWifi = modelData.type === 1
+                    }
+                }
+            }
         }
-        return null
     }
 
-    // Find the connected network on the primary device
-    readonly property var connectedNetwork: {
-        if (!primaryDevice) return null
-        const nets = primaryDevice.networks
-        if (!nets) return null
-        for (let i = 0; i < nets.length; i++) {
-            if (nets[i].connected) return nets[i]
+    // --- Get network name and signal via nmcli ---
+    Process {
+        id: nmcliProc
+        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep '^yes' | head -1"]
+        running: root.connected && root.isWifi
+
+        stdout: SplitParser {
+            onRead: line => {
+                const parts = line.trim().split(":")
+                if (parts.length >= 3) {
+                    root.netName = parts[1] || "WiFi"
+                    root.signalPct = parseInt(parts[2]) || 0
+                }
+            }
         }
-        return null
     }
 
-    readonly property bool connected: primaryDevice !== null
+    // Refresh network info every 10 seconds
+    Timer {
+        interval: 10000
+        running: true
+        repeat: true
+        onTriggered: {
+            if (root.connected && root.isWifi) {
+                nmcliProc.running = true
+            }
+        }
+    }
 
     readonly property string iconNerd: {
-        if (!connected) return "\uf127"           // nf-fa-chain_broken
-        if (primaryDevice.type === DeviceType.Wifi) return "\uf1eb"  // nf-fa-wifi
-        return "\uf6ff"                           // nf-fa-ethernet
-    }
-
-    readonly property int signalPct: {
-        if (!connectedNetwork) return 0
-        return Math.round(connectedNetwork.signalStrength * 100)
+        if (!root.connected) return "\uf127"      // nf-fa-chain_broken
+        if (root.isWifi) return "\uf1eb"           // nf-fa-wifi
+        return "\uf6ff"                             // nf-fa-ethernet
     }
 
     Row {
@@ -58,9 +91,8 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (!root.connected) return "Offline"
-                if (root.primaryDevice.type === DeviceType.Wifi) {
-                    return (root.connectedNetwork ? root.connectedNetwork.name : "WiFi")
-                         + " " + root.signalPct + "%"
+                if (root.isWifi) {
+                    return (root.netName || "WiFi") + " " + root.signalPct + "%"
                 }
                 return "Wired"
             }

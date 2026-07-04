@@ -53,7 +53,6 @@ Row {
             Behavior on radius { NumberAnimation { duration: 100 } }
 
             // Pop animation when becoming active
-            property bool wasActive: isActive
             onIsActiveChanged: {
                 if (isActive) {
                     scale = 1.15
