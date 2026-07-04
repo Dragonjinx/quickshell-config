@@ -10,7 +10,7 @@ import Quickshell.Networking
 // Default: icon + signal strength. Hover: popup with network name.
 Item {
     id: root
-    implicitWidth: 90
+    implicitWidth: contentRow.implicitWidth + 12
     required property var barWindow
 
     // --- Connected device detection via hidden Repeater ---
@@ -116,6 +116,7 @@ Item {
 
     // --- Main content ---
     Row {
+        id: contentRow
         anchors.centerIn: parent
         spacing: 6
         opacity: root.connected ? 1.0 : 0.5

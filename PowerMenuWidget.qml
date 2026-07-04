@@ -4,9 +4,10 @@ import Quickshell
 // Power menu button — click to launch wlogout.
 Item {
     id: root
-    implicitWidth: 30
+    implicitWidth: iconText.implicitWidth + 12
 
     Text {
+        id: iconText
         anchors.centerIn: parent
         font.family: Theme.fontFam
         text: "\uf011"  // nf-fa-power_off

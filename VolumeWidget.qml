@@ -5,9 +5,10 @@ import Quickshell
 // Left-click toggles sink (speaker) mute. Right-click toggles source (mic) mute.
 Item {
     id: root
-    implicitWidth: 80
+    implicitWidth: contentRow.implicitWidth + 12
 
     Row {
+        id: contentRow
         anchors.centerIn: parent
         spacing: 6
         opacity: VolumeSingleton.muted || VolumeSingleton.micMuted ? 0.75 : 1.0

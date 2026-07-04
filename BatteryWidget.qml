@@ -4,10 +4,11 @@ import Quickshell
 // Battery widget — Nerd Font battery icons, hidden if no battery found.
 Item {
     id: root
-    implicitWidth: 55
+    implicitWidth: contentRow.implicitWidth + 12
     visible: BatterySingleton.percentage >= 0
 
     Row {
+        id: contentRow
         anchors.centerIn: parent
         spacing: 6
 
