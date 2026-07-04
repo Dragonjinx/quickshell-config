@@ -10,7 +10,7 @@ Item {
         id: iconText
         anchors.centerIn: parent
         font.family: Theme.fontFam
-        text: "\uf011"  // nf-fa-power_off
+        text: ""  // nf-fa-power_off
         font.pixelSize: Theme.barFontSize + 2
         color: Theme.barText
     }

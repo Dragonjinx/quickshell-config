@@ -73,9 +73,9 @@ Item {
     }
 
     readonly property string iconNerd: {
-        if (!root.connected) return "\uf127"      // nf-fa-chain_broken
-        if (root.isWifi) return "\uf1eb"           // nf-fa-wifi
-        return "\uf0200"                           // nf-mdi-lan (ethernet)
+        if (!root.connected) return ""      // nf-fa-chain_broken
+        if (root.isWifi) return ""           // nf-fa-wifi
+        return "󰈀"                           // nf-mdi-lan (ethernet)
     }
 
     // --- Tooltip popup ---

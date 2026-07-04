@@ -50,14 +50,14 @@ Singleton {
 
     // Icon helpers
     readonly property string sinkIcon: {
-        if (muted) return "\uf466"   // nf-fa-volume_off
-        if (volume < 0.01) return "\uf026" // nf-fa-volume_off (same icon)
-        if (volume < 0.33) return "\uf027" // nf-fa-volume_down
-        return "\uf028"               // nf-fa-volume_up
+        if (muted) return ""   // nf-fa-volume_off
+        if (volume < 0.01) return "" // nf-fa-volume_off (same icon)
+        if (volume < 0.33) return "" // nf-fa-volume_down
+        return ""               // nf-fa-volume_up
     }
 
     readonly property string micIcon: {
-        if (source && source.audio && source.audio.muted) return "\uf131" // nf-fa-microphone_slash
-        return "\uf130"               // nf-fa-microphone
+        if (source && source.audio && source.audio.muted) return "" // nf-fa-microphone_slash
+        return ""               // nf-fa-microphone
     }
 }

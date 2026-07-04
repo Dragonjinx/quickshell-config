@@ -111,12 +111,12 @@ Singleton {
     // Nerd Font icon based on state
     readonly property string iconNerd: {
         if (percentage < 0) return ""
-        if (pluggedIn) return "\uf1e6"         // nf-fa-plug
-        if (charging) return "\uf04e6"          // nf-mdi-battery_charging_100
-        if (percentage < 15) return "\uf244"   // nf-fa-battery_0
-        if (percentage < 40) return "\uf243"   // nf-fa-battery_1
-        if (percentage < 65) return "\uf242"   // nf-fa-battery_2
-        if (percentage < 90) return "\uf241"   // nf-fa-battery_3
-        return "\uf240"                         // nf-fa-battery_4
+        if (pluggedIn) return ""         // nf-fa-plug
+        if (charging) return ""          // nf-fa-bolt
+        if (percentage < 15) return ""   // nf-fa-battery_0
+        if (percentage < 40) return ""   // nf-fa-battery_1
+        if (percentage < 65) return ""   // nf-fa-battery_2
+        if (percentage < 90) return ""   // nf-fa-battery_3
+        return ""                         // nf-fa-battery_4
     }
 }
