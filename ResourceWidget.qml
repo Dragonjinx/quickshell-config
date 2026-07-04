@@ -2,7 +2,8 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Resource usage widget — CPU and memory percentages.
+// Resource usage widget — Disk, CPU, and Memory percentages.
+// Matches Waybar's hardware group format: D xx% / C xx% / M xx%
 // Click: opens btop.
 Item {
     id: root
@@ -10,6 +11,7 @@ Item {
 
     property int cpuUsage: 0
     property int memUsage: 0
+    property int diskUsage: 0
 
     // Previous CPU ticks for delta calculation
     property int prevIdle: 0
@@ -25,8 +27,7 @@ Item {
             onRead: line => {
                 var parts = line.trim().split(/\s+/)
                 if (parts.length < 5) return
-                // cpu user nice system idle iowait irq softirq steal
-                var idle = parseInt(parts[4]) + parseInt(parts[5])  // idle + iowait
+                var idle = parseInt(parts[4]) + parseInt(parts[5])
                 var total = 0
                 for (var i = 1; i < parts.length; i++) total += parseInt(parts[i])
 
@@ -63,53 +64,77 @@ Item {
         }
     }
 
-    // Refresh every 5 seconds
+    // --- Disk usage via df ---
+    Process {
+        id: diskProc
+        command: ["sh", "-c", "df / | awk 'NR==2 {print $5}' | tr -d '%'"]
+        running: true
+
+        stdout: SplitParser {
+            onRead: line => {
+                var val = parseInt(line.trim())
+                if (!isNaN(val)) root.diskUsage = val
+            }
+        }
+    }
+
+    // Refresh every 10 seconds
     Timer {
-        interval: 5000
+        interval: 10000
         running: true
         repeat: true
         onTriggered: {
             cpuProc.running = true
             memProc.running = true
+            diskProc.running = true
         }
     }
 
     Row {
         id: contentRow
         anchors.centerIn: parent
-        spacing: 6
+        spacing: 4
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
-            font.family: Theme.fontFam
+            text: "D"
+            font.pixelSize: Theme.barFontSize
+            color: Theme.outline
+        }
+        Text {
+            text: root.diskUsage + "%"
+            font.pixelSize: Theme.barFontSize
+            color: root.diskUsage > 85 ? Theme.error : Theme.barText
+        }
+
+        Text {
+            text: "/"
+            color: Theme.outline
+            font.pixelSize: Theme.barFontSize
+        }
+
+        Text {
+            text: "C"
+            font.pixelSize: Theme.barFontSize
+            color: Theme.outline
+        }
+        Text {
             text: root.cpuUsage + "%"
             font.pixelSize: Theme.barFontSize
             color: root.cpuUsage > 80 ? Theme.error : Theme.barText
         }
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
             text: "/"
             color: Theme.outline
             font.pixelSize: Theme.barFontSize
         }
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
-            font.family: Theme.fontFam
-            text: "\uf2db"  // nf-fa-microchip
-            color: Theme.barText
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: "/"
-            color: Theme.outline
+            text: "M"
             font.pixelSize: Theme.barFontSize
+            color: Theme.outline
         }
-
         Text {
-            anchors.verticalCenter: parent.verticalCenter
             text: root.memUsage + "%"
             font.pixelSize: Theme.barFontSize
             color: root.memUsage > 80 ? Theme.error : Theme.barText
