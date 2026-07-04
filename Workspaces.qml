@@ -26,14 +26,16 @@ Row {
         model: [1, 2, 3, 4, 5]
 
         delegate: Rectangle {
+            id: delegateRect
             required property int modelData
 
             readonly property var ws: root.wsMap[modelData]
             readonly property bool isActive: root.activeWs ? root.activeWs.id === modelData : false
             readonly property bool isUrgent: ws ? ws.urgent : false
             property bool hovered: false
+            property int extraPad: 0
 
-            implicitWidth: txt.implicitWidth + 16
+            implicitWidth: txt.implicitWidth + 16 + extraPad
             height: parent.height
             radius: hovered ? 5 : 4
             color: {
@@ -50,9 +52,20 @@ Row {
             Behavior on opacity { NumberAnimation { duration: 100 } }
             Behavior on color { ColorAnimation { duration: 100 } }
             Behavior on radius { NumberAnimation { duration: 100 } }
-            scale: isActive ? 1.15 : 1.0
 
-            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
+            // Animate width when active state changes
+            onIsActiveChanged: {
+                extraPadAnim.to = isActive ? 8 : 0
+                extraPadAnim.start()
+            }
+
+            NumberAnimation {
+                id: extraPadAnim
+                target: delegateRect
+                property: "extraPad"
+                duration: 150
+                easing.type: Easing.InOutQuad
+            }
 
             Text {
                 id: txt
