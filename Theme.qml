@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 // Theme with three presets: matugen (default), black, white.
@@ -133,4 +134,28 @@ Singleton {
     }
 
     Component.onCompleted: applyMode()
+
+    // --- Auto-detect dark/light mode from dconf ---
+    Process {
+        id: dconfProc
+        command: ["sh", "-c", "dconf read /org/gnome/desktop/interface/color-scheme 2>/dev/null || echo default"]
+        running: true
+
+        stdout: SplitParser {
+            onRead: line => {
+                var val = line.trim().replace(/'/g, "")
+                if (val === "prefer-dark") root.setMode("black")
+                else if (val === "prefer-light") root.setMode("white")
+                // if 'default' or unknown, keep matugen
+            }
+        }
+    }
+
+    // Poll for changes
+    Timer {
+        interval: 5000
+        running: true
+        repeat: true
+        onTriggered: { dconfProc.running = true }
+    }
 }
