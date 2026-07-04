@@ -13,10 +13,8 @@ Item {
     readonly property int currentMonth: today.getMonth()
     readonly property int currentYear: today.getFullYear()
 
-    // First day of week: 0=Sun, 1=Mon — match LC_TIME=de_DE (Monday)
     readonly property int firstDayOfWeek: 1  // Monday
 
-    // Month navigation
     property int viewMonth: currentMonth
     property int viewYear: currentYear
 
@@ -27,7 +25,7 @@ Item {
 
     readonly property int daysInMonth: new Date(viewYear, viewMonth + 1, 0).getDate()
     readonly property int firstDayOffset: {
-        const d = new Date(viewYear, viewMonth, 1).getDay()  // 0=Sun..6=Sat
+        const d = new Date(viewYear, viewMonth, 1).getDay()
         return (d - firstDayOfWeek + 7) % 7
     }
 
@@ -38,20 +36,14 @@ Item {
 
     readonly property var dayHeaders: firstDayOfWeek === 1
         ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sun"]
 
     PopupWindow {
         id: popup
-        visible: root.open || popup.hovered
-        grabFocus: true
+        visible: root.open || popup.selfHovered
+        grabFocus: false
 
-        property bool hovered: false
-
-        onVisibleChanged: {
-            if (!visible) {
-                root.open = false
-            }
-        }
+        property bool selfHovered: false
 
         anchor.window: root.anchorWindow
         anchor.rect.x: root.anchorWindow
@@ -63,11 +55,8 @@ Item {
         implicitHeight: calendarColumn.implicitHeight + 20
         color: "transparent"
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onEntered: popup.hovered = true
-            onExited: popup.hovered = false
+        onVisibleChanged: {
+            if (!visible) root.open = false
         }
 
         Rectangle {
@@ -77,6 +66,13 @@ Item {
             border.color: Theme.outlineVar
             border.width: 1
 
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: popup.selfHovered = true
+                onExited: popup.selfHovered = false
+            }
+
             Column {
                 id: calendarColumn
                 anchors {
@@ -85,13 +81,12 @@ Item {
                 }
                 spacing: 8
 
-                // Month/year header with navigation
                 Row {
                     width: parent.width
                     spacing: 8
 
                     Text {
-                        text: "\uf053"  // nf-fa-chevron_left
+                        text: "\uf053"
                         font.family: Theme.fontFam
                         color: Theme.barText
                         MouseArea {
@@ -117,7 +112,7 @@ Item {
                     }
 
                     Text {
-                        text: "\uf054"  // nf-fa-chevron_right
+                        text: "\uf054"
                         font.family: Theme.fontFam
                         color: Theme.barText
                         MouseArea {
@@ -133,7 +128,6 @@ Item {
                     }
                 }
 
-                // Day-of-week headers
                 Row {
                     width: parent.width
                     spacing: 2
@@ -151,20 +145,17 @@ Item {
                     }
                 }
 
-                // Calendar grid
                 Grid {
                     columns: 7
                     columnSpacing: 2
                     rowSpacing: 2
                     width: parent.width
 
-                    // Empty cells before first day
                     Repeater {
                         model: root.firstDayOffset
                         delegate: Item { width: (parent.width - 12) / 7; height: 24 }
                     }
 
-                    // Day cells
                     Repeater {
                         model: root.daysInMonth
 
@@ -203,8 +194,6 @@ Item {
     }
 
     onOpenChanged: {
-        if (open) {
-            resetView()
-        }
+        if (open) resetView()
     }
 }
