@@ -75,6 +75,8 @@ Item {
         return "\uf6ff"                             // nf-fa-ethernet
     }
 
+    property bool hovered: false
+
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -87,13 +89,13 @@ Item {
             color: root.connected ? Theme.barText : Theme.textSurf
         }
 
+        // Default: signal strength. On hover: network name.
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: {
                 if (!root.connected) return "Offline"
-                if (root.isWifi) {
-                    return (root.netName || "WiFi") + " " + root.signalPct + "%"
-                }
+                if (root.hovered && root.isWifi) return root.netName || "WiFi"
+                if (root.isWifi) return root.signalPct + "%"
                 return "Wired"
             }
             font.pixelSize: Theme.barFontSize
@@ -104,7 +106,10 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        onEntered: root.hovered = true
+        onExited: root.hovered = false
         onClicked: {
             Quickshell.execDetached(["alacritty", "-e", "nmtui"])
         }
