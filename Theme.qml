@@ -40,8 +40,8 @@ Singleton {
     property color launchDim
 
     readonly property string fontFam: "BlexMono Nerd Font"
-    readonly property int barFontSize: 13
-    readonly property int launchFontSize: 12
+    readonly property int barFontSize: 15
+    readonly property int launchFontSize: 14
 
     function setMode(newMode) {
         root.mode = newMode

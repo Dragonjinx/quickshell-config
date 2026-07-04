@@ -22,10 +22,10 @@ Scope {
             anchors { top: true; left: true; right: true }
             margins { top: 6; left: 12; right: 12 }
 
-            implicitHeight: 36
+            implicitHeight: 40
             color: "transparent"
             exclusionMode: ExclusionMode.Normal
-            exclusiveZone: 36
+            exclusiveZone: 40
 
             Rectangle {
                 id: barContent
