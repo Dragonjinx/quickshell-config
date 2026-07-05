@@ -78,6 +78,17 @@ Item {
         return "󰈀"                           // nf-mdi-lan (ethernet)
     }
 
+    // Pre-compute center via parent chain (avoids mapToItem issues in PopupWindow)
+    readonly property real iconCenterX: {
+        var x = 0;
+        var item = root;
+        while (item && item !== root.barContent) {
+            x += item.x;
+            item = item.parent;
+        }
+        return x + root.width / 2;
+    }
+
     // --- Tooltip popup ---
     property bool hovered: false
 
@@ -87,10 +98,8 @@ Item {
         grabFocus: false
 
         anchor.window: root.barWindow
-        anchor.rect.x: root.barContent
-            ? root.mapToItem(root.barContent, root.width / 2, 0).x - tooltip.implicitWidth / 2
-            : 0
-        anchor.rect.y: root.barWindow ? root.barWindow.height + 4 : 0
+        anchor.rect.x: root.iconCenterX - tooltip.implicitWidth / 2
+        anchor.rect.y: root.barWindow.height + 4
 
         implicitWidth: Math.min(nameText.implicitWidth + 24, 300)
         implicitHeight: 28
