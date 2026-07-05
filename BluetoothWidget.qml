@@ -28,15 +28,15 @@ Item {
 
     readonly property string iconNerd: !root.enabled ? "󰂲" : root.connectedCount > 0 ? "󰂱" : "󰂯"
 
-    // Walk parent chain to compute x within barContent (avoids mapToItem issues)
-    readonly property real iconCenter: {
+    // Walk parent chain to compute left edge within barContent
+    readonly property real iconLeft: {
         var x = 0;
         var item = root;
         while (item && item !== root.barContent) {
             x += item.x;
             item = item.parent;
         }
-        return x + root.width / 2;
+        return x;
     }
 
     // --- Hover popup (simple, matching NetworkWidget pattern) ---
@@ -48,7 +48,7 @@ Item {
         grabFocus: false
 
         anchor.window: root.barWindow
-        anchor.rect.x: root.iconCenter - tooltip.implicitWidth / 2
+        anchor.rect.x: root.iconLeft
         anchor.rect.y: root.barWindow.height + 4
 
         implicitWidth: Math.min(popupText.implicitWidth + 24, 300)
