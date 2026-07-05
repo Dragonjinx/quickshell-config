@@ -4,10 +4,7 @@ import Quickshell.Io
 import Quickshell.Networking
 
 // Network status widget — shows wifi or ethernet indicator via Nerd Font.
-// Uses a hidden Repeater to iterate Networking.devices (ObjectModel),
-// and a Process to get the active connection name from nmcli.
-//
-// Default: icon + signal strength. Hover: popup with network name.
+// Hover reveals a popup with device and network info.
 Item {
     id: root
     implicitWidth: contentRow.implicitWidth + 12
@@ -44,15 +41,58 @@ Item {
         }
     }
 
-    // --- Get network name and signal via nmcli ---
+    // --- Pre-computed device info for the popup ---
+    readonly property string networkDevices: {
+        if (!Networking || !Networking.devices) return "";
+        var devs = Networking.devices.values;
+        var lines = [];
+        for (var i = 0; i < devs.length; i++) {
+            var dev = devs[i];
+            if (dev.connected) {
+                var devName = dev.name || "Device";
+                var typeIcon = dev.type === 1 ? "" : "󰈀";
+                var netName = "";
+                if (dev.networks) {
+                    var nets = dev.networks.values;
+                    for (var j = 0; j < nets.length; j++) {
+                        if (nets[j].connected) {
+                            netName = nets[j].name || "";
+                            // For wifi, append signal
+                            if (dev.type === 1 && nets[j].signalStrength !== undefined) {
+                                var sig = Math.round(nets[j].signalStrength * 100);
+                                netName += "  " + sig + "%";
+                            }
+                            break;
+                        }
+                    }
+                }
+                var line = typeIcon + "  " + devName;
+                if (netName !== "") line += "  —  " + netName;
+                lines.push(line);
+            }
+        }
+        return lines.join("\n");
+    }
+
+    readonly property int connectedCount: {
+        if (!Networking || !Networking.devices) return 0;
+        var devs = Networking.devices.values;
+        var count = 0;
+        for (var i = 0; i < devs.length; i++) {
+            if (devs[i].connected) count++;
+        }
+        return count;
+    }
+
+    // --- Get network name and signal via nmcli (for bar display) ---
     Process {
         id: nmcliProc
         command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep '^yes' | head -1"]
         running: root.connected && root.isWifi
 
         stdout: SplitParser {
-            onRead: line => {
-                const parts = line.trim().split(":")
+            onRead: function(line) {
+                var parts = line.trim().split(":")
                 if (parts.length >= 3) {
                     root.netName = parts[1] || "WiFi"
                     root.signalPct = parseInt(parts[2]) || 0
@@ -94,30 +134,59 @@ Item {
 
     PopupWindow {
         id: tooltip
-        visible: root.hovered && root.connected && root.isWifi
+        visible: root.hovered && root.connected
         grabFocus: false
 
         anchor.window: root.barWindow
         anchor.rect.x: root.iconLeft
         anchor.rect.y: root.barWindow.height + 4
 
-        implicitWidth: Math.min(nameText.implicitWidth + 24, 300)
-        implicitHeight: 28
+        implicitWidth: Math.min(300, Math.max(180, deviceColumn.implicitWidth + 20))
+        implicitHeight: deviceColumn.implicitHeight + 20
         color: "transparent"
 
         Rectangle {
             anchors.fill: parent
-            radius: 6
+            radius: 8
             color: Theme.surface
             border.color: Theme.outlineVar
             border.width: 1
 
-            Text {
-                id: nameText
-                anchors.centerIn: parent
-                text: root.netName || "WiFi"
-                font.pixelSize: Theme.barFontSize
-                color: Theme.barText
+            Column {
+                id: deviceColumn
+                anchors {
+                    left: parent.left; leftMargin: 10
+                    top: parent.top; topMargin: 8
+                    right: parent.right; rightMargin: 10
+                }
+                spacing: 3
+
+                // --- Header ---
+                Text {
+                    text: "  Network  " + (root.connected ? (root.isWifi ? "WiFi" : "Wired") : "Offline")
+                    font.pixelSize: 13
+                    font.bold: true
+                    color: Theme.barText
+                    bottomPadding: 4
+                }
+
+                // --- Device list ---
+                Text {
+                    text: root.networkDevices
+                    font.pixelSize: 12
+                    color: Theme.barText
+                    visible: root.networkDevices !== ""
+                    lineHeight: 1.6
+                }
+
+                // --- Empty state ---
+                Text {
+                    text: "No active connections"
+                    font.pixelSize: 12
+                    color: Theme.textSurf
+                    visible: root.networkDevices === ""
+                    height: 20
+                }
             }
         }
     }
