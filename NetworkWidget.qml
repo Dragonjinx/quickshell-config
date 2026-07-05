@@ -57,7 +57,6 @@ Item {
                     for (var j = 0; j < nets.length; j++) {
                         if (nets[j].connected) {
                             netName = nets[j].name || "";
-                            // For wifi, append signal
                             if (dev.type === 1 && nets[j].signalStrength !== undefined) {
                                 var sig = Math.round(nets[j].signalStrength * 100);
                                 netName += "  " + sig + "%";
@@ -83,6 +82,9 @@ Item {
         }
         return count;
     }
+
+    // --- Airplane mode detection ---
+    readonly property bool airplaneMode: !Networking.wifiHardwareEnabled
 
     // --- Get network name and signal via nmcli (for bar display) ---
     Process {
@@ -161,7 +163,6 @@ Item {
                 }
                 spacing: 3
 
-
                 // --- Device list ---
                 Text {
                     text: root.networkDevices
@@ -173,7 +174,7 @@ Item {
 
                 // --- Empty state ---
                 Text {
-                    text: "No active connections"
+                    text: root.airplaneMode ? "Airplane mode" : "No active connections"
                     font.pixelSize: 12
                     color: Theme.textSurf
                     visible: root.networkDevices === ""

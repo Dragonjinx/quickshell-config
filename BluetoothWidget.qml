@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Widgets
 
@@ -63,6 +64,7 @@ Item {
         return count;
     }
 
+    readonly property bool airplaneMode: !Networking.wifiHardwareEnabled
     readonly property string iconNerd: !root.enabled ? "󰂲" : root.connectedCount > 0 ? "󰂱" : "󰂯"
 
     // Walk parent chain to compute left edge within barContent
@@ -147,7 +149,7 @@ Item {
 
                 // --- Empty state ---
                 Text {
-                    text: root.enabled ? "No paired devices" : "Bluetooth disabled"
+                    text: root.airplaneMode ? "Airplane mode" : (root.enabled ? "No paired devices" : "Bluetooth disabled")
                     font.pixelSize: 12
                     color: Theme.textSurf
                     visible: root.connectedText === "" && root.pairedText === ""
