@@ -31,12 +31,14 @@ Singleton {
     property color barText
     property color barHover
     property color wsActive
+    property color wsActiveText
     property color wsInactive
     property color wsUrgent
     property color launchBg
     property color launchSurface
     property color launchSel
     property color launchText
+    property color launchTextSel
     property color launchDim
 
     readonly property string fontFam: "BlexMono Nerd Font"
@@ -67,13 +69,15 @@ Singleton {
             barBg           = "#cc000000"
             barText         = "#ffffff"
             barHover        = "#333333"
-            wsActive        = "#8ecff2"
+            wsActive        = "#ffffff"
+            wsActiveText    = "#000000"
             wsInactive      = "#333333"
             wsUrgent        = "#ffb4ab"
             launchBg        = "#f0000000"
             launchSurface   = "#1a1a1a"
-            launchSel       = "#8ecff2"
+            launchSel       = "#ffffff"
             launchText      = "#ffffff"
+            launchTextSel   = "#000000"
             launchDim       = "#666666"
 
         } else if (root.mode === "white") {
@@ -94,42 +98,46 @@ Singleton {
             barBg           = "#ccffffff"
             barText         = "#000000"
             barHover        = "#e0e0e0"
-            wsActive        = "#006494"
+            wsActive        = "#ffffff"
+            wsActiveText    = "#000000"
             wsInactive      = "#c4c7c9"
             wsUrgent        = "#ba1a1a"
             launchBg        = "#f0ffffff"
             launchSurface   = "#f5f5f5"
-            launchSel       = "#006494"
+            launchSel       = "#333333"
             launchText      = "#000000"
+            launchTextSel   = "#ffffff"
             launchDim       = "#8a9297"
 
         } else {
-            // matugen (default)
-            bg              = "#0f1417"
-            surface         = "#1b2023"
-            surfCont        = "#262b2e"
-            surfBright      = "#353a3d"
-            textBg          = "#dfe3e7"
-            textSurf        = "#dfe3e7"
+            // default: dark mode (same as black)
+            bg              = "#000000"
+            surface         = "#1a1a1a"
+            surfCont        = "#262626"
+            surfBright      = "#333333"
+            textBg          = "#ffffff"
+            textSurf        = "#ffffff"
             primary         = "#8ecff2"
             primCont        = "#004d67"
-            onPrim          = "#003548"
+            onPrim          = "#000000"
             secondary       = "#b5c9d7"
             tertiary        = "#c9c1ea"
             error           = "#ffb4ab"
-            outline         = "#8a9297"
-            outlineVar      = "#40484d"
-            barBg           = "#cc0f1417"
-            barText         = "#dfe3e7"
-            barHover        = "#353a3d"
-            wsActive        = "#8ecff2"
-            wsInactive      = "#40484d"
+            outline         = "#666666"
+            outlineVar      = "#404040"
+            barBg           = "#cc000000"
+            barText         = "#ffffff"
+            barHover        = "#333333"
+            wsActive        = "#ffffff"
+            wsActiveText    = "#000000"
+            wsInactive      = "#333333"
             wsUrgent        = "#ffb4ab"
-            launchBg        = "#f00f1417"
-            launchSurface   = "#1b2023"
-            launchSel       = "#8ecff2"
-            launchText      = "#dfe3e7"
-            launchDim       = "#40484d"
+            launchBg        = "#f0000000"
+            launchSurface   = "#1a1a1a"
+            launchSel       = "#ffffff"
+            launchText      = "#ffffff"
+            launchTextSel   = "#000000"
+            launchDim       = "#666666"
         }
     }
 
@@ -171,5 +179,6 @@ Singleton {
         val = val.trim().replace(/'/g, "")
         if (val === "prefer-dark") root.setMode("black")
         else if (val === "prefer-light") root.setMode("white")
+        else root.setMode("black")  // default to dark
     }
 }

@@ -72,7 +72,7 @@ Row {
                 id: txt
                 anchors.centerIn: parent
                 text: modelData
-                color: isActive ? Theme.bg : Theme.textSurf
+                color: isActive ? Theme.wsActiveText : Theme.textSurf
                 font.pixelSize: Theme.barFontSize
                 font.bold: isActive
             }
@@ -111,7 +111,7 @@ Row {
             id: overflowTxt
             anchors.centerIn: parent
             text: parent.overflowActive ? parent.overflowActive.id : "+"
-            color: Theme.bg
+            color: Theme.wsActiveText
             font.pixelSize: Theme.barFontSize
             font.bold: true
         }

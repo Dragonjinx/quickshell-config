@@ -17,6 +17,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
+            font.pixelSize: Theme.barFontSize
             text: VolumeSingleton.sinkIcon
             color: VolumeSingleton.muted ? Theme.error : Theme.barText
         }
@@ -36,7 +37,7 @@ Item {
             font.family: Theme.fontFam
             text: VolumeSingleton.micIcon
             color: VolumeSingleton.micMuted ? Theme.error : Theme.barText
-            font.pixelSize: Theme.barFontSize - 1
+            font.pixelSize: Theme.barFontSize
         }
     }
 

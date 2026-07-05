@@ -10,8 +10,8 @@ Item {
         id: iconText
         anchors.centerIn: parent
         font.family: Theme.fontFam
+        font.pixelSize: Theme.barFontSize
         text: ""  // nf-fa-power_off
-        font.pixelSize: Theme.barFontSize + 2
         color: Theme.barText
     }
 

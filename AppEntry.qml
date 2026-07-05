@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 
@@ -8,48 +7,27 @@ Rectangle {
     id: root
 
     required property DesktopEntry entry
+    property bool selected: false
+    signal activated()
 
     height: 44
     radius: 8
-    color: ma.containsMouse ? Theme.launcherSelected : "transparent"
+    color: ma.containsMouse || root.selected ? Theme.launchSel : "transparent"
 
     Behavior on color { ColorAnimation { duration: 80 } }
 
-    RowLayout {
+    Text {
         anchors {
-            fill: parent
-            leftMargin: 12
-            rightMargin: 12
+            left: parent.left
+            leftMargin: 14
+            right: parent.right
+            rightMargin: 14
+            verticalCenter: parent.verticalCenter
         }
-        spacing: 12
-
-        IconImage {
-            implicitSize: 28
-            source: entry.icon ? Quickshell.iconPath(entry.icon) : ""
-            visible: entry.icon !== ""
-        }
-
-        Column {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 2
-
-            Text {
-                text: entry.name
-                font.pixelSize: Theme.launchFontSize
-                font.bold: true
-                color: Theme.launchText
-                elide: Text.ElideRight
-            }
-
-            Text {
-                text: entry.genericName || ""
-                font.pixelSize: Theme.launchFontSize - 2
-                color: Theme.launchDim
-                elide: Text.ElideRight
-                visible: entry.genericName !== ""
-            }
-        }
+        text: entry.name
+        font.pixelSize: Theme.launchFontSize
+        color: ma.containsMouse || root.selected ? Theme.launchTextSel : Theme.launchText
+        elide: Text.ElideRight
     }
 
     MouseArea {
@@ -59,7 +37,7 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             entry.execute()
-            AppLauncher.close()
+            root.activated()
         }
     }
 }

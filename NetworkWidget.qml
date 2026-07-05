@@ -123,6 +123,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
+            font.pixelSize: Theme.barFontSize
             text: root.iconNerd
             color: root.connected ? Theme.barText : Theme.textSurf
         }

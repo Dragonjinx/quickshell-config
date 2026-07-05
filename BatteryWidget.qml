@@ -18,6 +18,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
+            font.pixelSize: Theme.barFontSize
             text: BatterySingleton.iconNerd
             color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
         }

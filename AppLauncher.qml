@@ -15,58 +15,89 @@ Item {
     readonly property bool isOpen: launcherWindow.visible
     property string filter: ""
 
-    readonly property var filteredApps: {
-        const f = filter.toLowerCase().trim()
-        const all = DesktopEntries.applications
-        if (f === "") return all
-        return all.filter(app => {
-            const name = (app.name || "").toLowerCase()
-            const generic = (app.genericName || "").toLowerCase()
-            const keywords = (app.keywords || []).join(" ").toLowerCase()
-            return name.includes(f) || generic.includes(f) || keywords.includes(f)
+    readonly property var allApps: {
+        var src = DesktopEntries.applications.values
+        var n = typeof src.length !== "undefined" ? src.length : 0
+        var apps = []
+        for (var i = 0; i < n; ++i) apps.push(src[i])
+        apps.sort(function(a, b) {
+            var nameA = (a.name || "").toLowerCase()
+            var nameB = (b.name || "").toLowerCase()
+            if (nameA < nameB) return -1
+            if (nameA > nameB) return 1
+            return 0
+        })
+        return apps
+    }
+    readonly property var filteredApps: root._filter(root.allApps, root.filter)
+
+    function _filter(apps, f) {
+        var trimmed = f.toLowerCase().trim()
+        if (trimmed === "") return apps
+        return apps.filter(function(app) {
+            var name = (app.name || "").toLowerCase()
+            var generic = (app.genericName || "").toLowerCase()
+            var keywords = (app.keywords || []).join(" ").toLowerCase()
+            return name.indexOf(trimmed) !== -1
+                || generic.indexOf(trimmed) !== -1
+                || keywords.indexOf(trimmed) !== -1
         })
     }
 
     FloatingWindow {
         id: launcherWindow
         visible: false
+        title: "quickshell-app-launcher"
 
         screen: Quickshell.screens[0]
 
-        Component.onCompleted: {
-            const s = Quickshell.screens.find(s => s.focused) || Quickshell.screens[0]
-            if (s) {
-                x = s.width / 2 - width / 2
-                y = s.height / 3 - height / 2
+        readonly property var centerScreen: {
+            var idx = 0
+            for (var i = 0; i < Quickshell.screens.length; ++i) {
+                if (Quickshell.screens[i].focused) { idx = i; break }
+            }
+            return Quickshell.screens[idx]
+        }
+
+        Component.onCompleted: recalcPosition()
+        onVisibleChanged: {
+            if (visible) {
+                searchField.forceActiveFocus()
+                recalcPosition()
             }
         }
 
-        implicitWidth: 520
-        implicitHeight: clampedHeight
-        color: "transparent"
-
-        onVisibleChanged: {
-            if (visible) searchField.forceActiveFocus()
+        function recalcPosition() {
+            var s = centerScreen
+            if (s) {
+                x = (s.width - width) / 2
+                y = Math.max(10, (s.height - height) / 3)
+            }
         }
 
-        readonly property int clampedHeight: Math.min(48 + filteredApps.length * 48 + 24, 600)
+        implicitWidth: Math.min(520, centerScreen ? centerScreen.width * 0.5 : 520)
+        implicitHeight: Math.min(600, centerScreen ? centerScreen.height * 0.75 : 600)
+        color: "transparent"
+
         property int selectedIndex: 0
 
         function moveSelection(delta) {
-            const count = filteredApps.length
+            var apps = root.filteredApps
+            var count = apps.length
             if (count === 0) return
             selectedIndex = (selectedIndex + delta + count) % count
             listView.positionViewAtIndex(selectedIndex, ListView.Contain)
         }
 
         function activateSelection() {
-            const app = filteredApps[selectedIndex]
+            var apps = root.filteredApps
+            var app = apps[launcherWindow.selectedIndex]
             if (app) { app.execute(); close() }
         }
 
         Item {
             anchors.fill: parent
-            Keys.onPressed: event => {
+            Keys.onPressed: function(event) {
                 if (event.key === Qt.Key_Escape) close()
                 if (event.key === Qt.Key_Down)    moveSelection(1)
                 if (event.key === Qt.Key_Up)      moveSelection(-1)
@@ -78,14 +109,17 @@ Item {
             radius: 12
             color: Theme.launchBg
 
-            ColumnLayout {
+            Column {
+                id: layoutColumn
                 anchors.fill: parent
                 spacing: 0
+                topPadding: 6
+                bottomPadding: 6
 
                 Rectangle {
                     id: searchBox
-                    Layout.fillWidth: true
-                    implicitHeight: 44
+                    width: parent.width
+                    height: 44
                     color: Theme.launchSurface
                     radius: 8
 
@@ -115,8 +149,8 @@ Item {
                                 launcherWindow.selectedIndex = 0
                             }
 
-                            Keys.onPressed: event => {
-                                if (event.key === Qt.Key_Escape) launcherWindow.close()
+                            Keys.onPressed: function(event) {
+                                if (event.key === Qt.Key_Escape) root.close()
                                 if (event.key === Qt.Key_Down) {
                                     launcherWindow.moveSelection(1); event.accepted = true
                                 }
@@ -133,20 +167,24 @@ Item {
 
                 ListView {
                     id: listView
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(filteredApps.length * 48, 520)
-                    Layout.topMargin: 8
-                    Layout.bottomMargin: 8
+                    width: parent.width
+                    height: Math.min(root.filteredApps.length * 48, 520)
+                    topMargin: 8
+                    bottomMargin: 4
                     model: filteredApps
                     clip: true
                     currentIndex: launcherWindow.selectedIndex
                     boundsBehavior: Flickable.StopAtBounds
+                    highlightMoveDuration: 80
+                    highlightFollowsCurrentItem: true
 
                     delegate: AppEntry {
                         required property DesktopEntry modelData
                         required property int index
                         width: listView.width
                         entry: modelData
+                        selected: index === listView.currentIndex
+                        onActivated: root.close()
                     }
                 }
             }
@@ -154,8 +192,5 @@ Item {
     }
     }
 
-    Shortcut {
-        sequence: "Meta+Space"
-        onActivated: root.toggle()
-    }
+    // Triggered via Hyprland global shortcut (see shell.qml for details).
 }
