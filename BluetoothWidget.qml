@@ -16,12 +16,49 @@ Item {
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property bool enabled: adapter ? adapter.enabled : false
 
+    // --- Pre-computed device info ---
+    readonly property string connectedText: {
+        if (!adapter || !adapter.devices) return "";
+        var vals = adapter.devices.values;
+        var lines = [];
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].connected) {
+                var name = vals[i].name || vals[i].deviceName || "Unknown";
+                lines.push("󰂱  " + name);
+            }
+        }
+        return lines.join("\n");
+    }
+
+    readonly property string pairedText: {
+        if (!adapter || !adapter.devices) return "";
+        var vals = adapter.devices.values;
+        var lines = [];
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].paired && !vals[i].connected) {
+                var name = vals[i].name || vals[i].deviceName || "Unknown";
+                lines.push(name);
+            }
+        }
+        return lines.join("\n");
+    }
+
     readonly property int connectedCount: {
         if (!adapter || !adapter.devices) return 0;
         var vals = adapter.devices.values;
         var count = 0;
         for (var i = 0; i < vals.length; i++) {
             if (vals[i].connected) count++;
+        }
+        return count;
+    }
+
+    readonly property int pairedDisconnectedCount: {
+        if (!adapter || !adapter.devices) return 0;
+        var vals = adapter.devices.values;
+        var count = 0;
+        for (var i = 0; i < vals.length; i++) {
+            if (vals[i].paired && !vals[i].connected) count++;
         }
         return count;
     }
@@ -39,9 +76,10 @@ Item {
         return x;
     }
 
-    // --- Hover popup (simple, matching NetworkWidget pattern) ---
+    // --- Hover state ---
     property bool hovered: false
 
+    // --- Hover popup ---
     PopupWindow {
         id: tooltip
         visible: root.hovered
@@ -51,23 +89,70 @@ Item {
         anchor.rect.x: root.iconLeft
         anchor.rect.y: root.barWindow.height + 4
 
-        implicitWidth: Math.min(popupText.implicitWidth + 24, 300)
-        implicitHeight: 28
+        implicitWidth: Math.min(240, Math.max(160, deviceColumn.implicitWidth + 20))
+        implicitHeight: deviceColumn.implicitHeight + 20
         color: "transparent"
 
         Rectangle {
             anchors.fill: parent
-            radius: 6
+            radius: 8
             color: Theme.surface
             border.color: Theme.outlineVar
             border.width: 1
 
-            Text {
-                id: popupText
-                anchors.centerIn: parent
-                text: root.enabled ? (root.connectedCount > 0 ? "Bluetooth Connected" : "Bluetooth On") : "Bluetooth Off"
-                font.pixelSize: Theme.barFontSize
-                color: Theme.barText
+            Column {
+                id: deviceColumn
+                anchors {
+                    left: parent.left; leftMargin: 10
+                    top: parent.top; topMargin: 8
+                    right: parent.right; rightMargin: 10
+                }
+                spacing: 3
+
+                // --- Header ---
+                Text {
+                    text: "󰂯 Bluetooth  " + (root.enabled ? (root.connectedCount > 0 ? "Connected" : "On") : "Off")
+                    font.pixelSize: 13
+                    font.bold: true
+                    color: Theme.barText
+                    bottomPadding: 4
+                }
+
+                // --- Connected devices ---
+                Text {
+                    text: root.connectedText
+                    font.pixelSize: 12
+                    color: Theme.barText
+                    visible: root.connectedText !== ""
+                    lineHeight: 1.6
+                }
+
+                // --- Separator ---
+                Rectangle {
+                    height: 1
+                    color: Theme.outlineVar
+                    visible: root.connectedCount > 0 && root.pairedDisconnectedCount > 0
+                    width: parent.width
+                }
+
+                // --- Paired (disconnected) devices ---
+                Text {
+                    text: root.pairedText
+                    font.pixelSize: 12
+                    color: Theme.textSurf
+                    opacity: 0.55
+                    visible: root.pairedText !== ""
+                    lineHeight: 1.5
+                }
+
+                // --- Empty state ---
+                Text {
+                    text: root.enabled ? "No paired devices" : "Bluetooth disabled"
+                    font.pixelSize: 12
+                    color: Theme.textSurf
+                    visible: root.connectedText === "" && root.pairedText === ""
+                    height: 20
+                }
             }
         }
     }
