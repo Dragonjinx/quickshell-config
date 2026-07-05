@@ -71,7 +71,7 @@ Scope {
                         ResourceWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
                         PowerMenuWidget { Layout.fillHeight: true }
-                        ClockWidget { Layout.fillHeight: true; barWindow: barWindow }
+                        ClockWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
                     }
                 }
             }

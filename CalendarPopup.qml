@@ -8,6 +8,18 @@ Item {
 
     property bool open: false
     property var anchorWindow: null
+    required property var barContent
+
+    // Pre-compute right edge via parent chain
+    readonly property real iconRight: {
+        var x = 0;
+        var item = root;
+        while (item && item !== root.barContent) {
+            x += item.x;
+            item = item.parent;
+        }
+        return x + root.parent.width;
+    }
 
     readonly property date today: new Date()
     readonly property int currentMonth: today.getMonth()
@@ -33,10 +45,8 @@ Item {
         grabFocus: false
 
         anchor.window: root.anchorWindow
-        anchor.rect.x: root.anchorWindow
-            ? root.anchorWindow.width - popup.implicitWidth
-            : 0
-        anchor.rect.y: root.anchorWindow ? root.anchorWindow.height + 4 : 0
+        anchor.rect.x: root.iconRight - popup.implicitWidth
+        anchor.rect.y: root.anchorWindow.height + 4
 
         implicitWidth: 260
         implicitHeight: calendarColumn.implicitHeight + 20

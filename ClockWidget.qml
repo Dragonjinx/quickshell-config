@@ -8,10 +8,12 @@ Item {
     id: root
     implicitWidth: displayText.contentWidth + 16
     required property var barWindow
+    required property var barContent
 
     CalendarPopup {
         id: calendarPopup
         anchorWindow: root.barWindow
+        barContent: root.barContent
         open: mouseArea.containsMouse
     }
 
