@@ -161,14 +161,6 @@ Item {
                 }
                 spacing: 3
 
-                // --- Header ---
-                Text {
-                    text: "  Network  " + (root.connected ? (root.isWifi ? "WiFi" : "Wired") : "Offline")
-                    font.pixelSize: 13
-                    font.bold: true
-                    color: Theme.barText
-                    bottomPadding: 4
-                }
 
                 // --- Device list ---
                 Text {
