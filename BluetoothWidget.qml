@@ -82,8 +82,8 @@ Item {
     // Re-check when wifi state changes (catches function key presses)
     Connections {
         target: Networking
-        onWifiEnabledChanged: { rfkillCheck.running = true }
-        onWifiHardwareEnabledChanged: { rfkillCheck.running = true }
+        function onWifiEnabledChanged() { rfkillCheck.running = true }
+        function onWifiHardwareEnabledChanged() { rfkillCheck.running = true }
     }
 
     // Initial check on load

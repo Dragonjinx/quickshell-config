@@ -94,7 +94,27 @@ Singleton {
         }
     }
 
-    // Refresh every 30 seconds
+    // Listen for kernel uevents on power supply changes (plug/unplug)
+    // Provides instant notification without polling.
+    Process {
+        id: udevMonitor
+        command: ["udevadm", "monitor", "--kernel", "--subsystem-match=power_supply"]
+        running: true
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.indexOf("BAT0") !== -1) {
+                    // Battery state changed — re-read all values instantly
+                    capProc.running = true
+                    statusProc.running = true
+                    energyNowProc.running = true
+                    powerNowProc.running = true
+                    energyFullProc.running = true
+                }
+            }
+        }
+    }
+
+    // Refresh periodically as a fallback (catches gradual charge changes)
     Timer {
         interval: 30000
         running: true

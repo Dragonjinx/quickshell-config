@@ -7,6 +7,7 @@ Rectangle {
     id: root
 
     required property DesktopEntry entry
+    property var launchAppCallback: null
     property bool selected: false
     signal activated()
 
@@ -36,7 +37,8 @@ Rectangle {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            entry.execute()
+            if (root.launchAppCallback) root.launchAppCallback(root.entry)
+            else root.entry.execute()
             root.activated()
         }
     }

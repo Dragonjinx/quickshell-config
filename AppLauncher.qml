@@ -15,6 +15,14 @@ Item {
     readonly property bool isOpen: launcherWindow.visible
     property string filter: ""
 
+    function launchApp(entry) {
+        var cmd = entry.command.slice()
+        if (entry.runInTerminal) {
+            cmd = ["alacritty", "-e"].concat(cmd)
+        }
+        Quickshell.execDetached(["uwsm-app", "--"].concat(cmd))
+    }
+
     readonly property var allApps: {
         var src = DesktopEntries.applications.values
         var n = typeof src.length !== "undefined" ? src.length : 0
@@ -95,7 +103,7 @@ Item {
         function activateSelection() {
             var apps = root.filteredApps
             var app = apps[launcherWindow.selectedIndex]
-            if (app) { app.execute(); close() }
+            if (app) { root.launchApp(app); close() }
         }
 
         Item {
@@ -187,6 +195,7 @@ Item {
                         width: listView.width
                         entry: modelData
                         selected: index === listView.currentIndex
+                        launchAppCallback: root.launchApp
                         onActivated: root.close()
                     }
                 }

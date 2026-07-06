@@ -20,6 +20,12 @@ import Quickshell.Hyprland
 // ============================================================
 
 ShellRoot {
+    // Pre-start the uwsm app daemon for fast app launches
+    Process {
+        command: ["systemctl", "--user", "start", "wayland-wm-app-daemon.service"]
+        running: true
+    }
+
     // Toggle app launcher via Hyprland global shortcut
     GlobalShortcut {
         name: "toggle-launcher"
