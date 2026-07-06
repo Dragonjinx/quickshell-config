@@ -83,8 +83,29 @@ Item {
         return count;
     }
 
-    // --- Airplane mode detection ---
-    readonly property bool airplaneMode: !Networking.wifiHardwareEnabled
+    // --- Airplane mode detection (check rfkill soft-block via nmcli) ---
+    property bool airplaneMode: false
+
+    Process {
+        id: rfkillCheck
+        command: ["sh", "-c", "rfkill list | grep -q 'Soft blocked: yes' && echo yes || echo no"]
+
+        stdout: SplitParser {
+            onRead: function(line) {
+                root.airplaneMode = line.trim() === "yes"
+            }
+        }
+    }
+
+    // Re-check when wifi state changes (catches function key presses)
+    Connections {
+        target: Networking
+        onWifiEnabledChanged: { rfkillCheck.running = true }
+        onWifiHardwareEnabledChanged: { rfkillCheck.running = true }
+    }
+
+    // Initial check on load
+    Component.onCompleted: { rfkillCheck.running = true }
 
     // --- Get network name and signal via nmcli (for bar display) ---
     Process {
@@ -115,6 +136,7 @@ Item {
     }
 
     readonly property string iconNerd: {
+        if (root.airplaneMode) return ""     // nf-fa-plane
         if (!root.connected) return ""      // nf-fa-chain_broken
         if (root.isWifi) return ""           // nf-fa-wifi
         return "󰈀"                           // nf-mdi-lan (ethernet)
@@ -136,7 +158,7 @@ Item {
 
     PopupWindow {
         id: tooltip
-        visible: root.hovered && root.connected
+        visible: root.hovered && (root.connected || root.airplaneMode)
         grabFocus: false
 
         anchor.window: root.barWindow

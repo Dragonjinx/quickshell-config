@@ -62,6 +62,9 @@ Item {
         Component.onCompleted: recalcPosition()
         onVisibleChanged: {
             if (visible) {
+                searchField.text = ""
+                launcherWindow.selectedIndex = 0
+                listView.positionViewAtIndex(0, ListView.Contain)
                 searchField.forceActiveFocus()
                 recalcPosition()
             }
@@ -175,7 +178,7 @@ Item {
                     clip: true
                     currentIndex: launcherWindow.selectedIndex
                     boundsBehavior: Flickable.StopAtBounds
-                    highlightMoveDuration: 80
+                    highlightMoveDuration: 0
                     highlightFollowsCurrentItem: true
 
                     delegate: AppEntry {

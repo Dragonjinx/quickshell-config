@@ -14,7 +14,7 @@ Rectangle {
     radius: 8
     color: ma.containsMouse || root.selected ? Theme.launchSel : "transparent"
 
-    Behavior on color { ColorAnimation { duration: 80 } }
+
 
     Text {
         anchors {
