@@ -47,7 +47,7 @@ Item {
         cursorShape: Qt.PointingHandCursor
         onClicked: mouse => {
             if (mouse.button === Qt.LeftButton) {
-                Quickshell.execDetached(["pavucontrol"])
+                Quickshell.execDetached(["alacritty", "--title", "wiremix", "-o", "window.opacity=1.0", "-e", "wiremix"])
             } else {
                 Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"])
             }
