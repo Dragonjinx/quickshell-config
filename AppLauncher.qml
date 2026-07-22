@@ -143,8 +143,8 @@ Item {
                         spacing: 10
 
                         Text {
-                            text: ""
-                            font.pixelSize: 16
+                            text: "󰍉"
+                            font.pixelSize: Theme.launchFontSize
                             color: Theme.launchDim
                         }
 

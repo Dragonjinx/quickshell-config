@@ -50,15 +50,15 @@ Singleton {
 
     // Icon helpers
     readonly property string sinkIcon: {
-        if (muted) return ""   // nf-fa-volume_off
-        if (volume < 0.01) return "" // nf-fa-volume_off (same icon)
-        if (volume < 0.33) return "" // nf-fa-volume_down
-        return ""               // nf-fa-volume_up
+        if (muted) return "󰖁"   // md-volume_off
+        if (volume < 0.01) return "󰖁" // md-volume_off (same icon)
+        if (volume < 0.33) return "󰕿" // md-volume_low
+        return "󰕾"               // md-volume_high
     }
 
     readonly property string micIcon: {
-        if (source && source.audio && source.audio.muted) return "" // nf-fa-microphone_slash
-        return ""               // nf-fa-microphone
+        if (source && source.audio && source.audio.muted) return "󰍭" // md-microphone_off
+        return "󰍬"               // md-microphone
     }
 
     // Sync mute LEDs directly from PipeWire state (same source as the icon bindings)

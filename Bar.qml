@@ -20,7 +20,7 @@ Scope {
             screen: modelData
 
             anchors { top: true; left: true; right: true }
-            margins { top: 6; left: 12; right: 12 }
+            margins { top: 6; left: 5; right: 5 }
 
             implicitHeight: 40
             color: "transparent"
@@ -70,7 +70,7 @@ Scope {
                         BatteryWidget { Layout.fillHeight: true }
                         ResourceWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
-                        PowerMenuWidget { Layout.fillHeight: true }
+                        PowerMenuWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
                         ClockWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
                     }
                 }

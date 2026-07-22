@@ -73,7 +73,7 @@ Item {
             var dev = devs[i];
             if (dev.connected) {
                 var devName = dev.name || "Device";
-                var typeIcon = dev.type === 1 ? "" : "󰈀";
+                var typeIcon = dev.type === 1 ? "󰖩" : "󰈀";
                 var netName = "";
                 if (dev.networks) {
                     var nets = dev.networks.values;
@@ -123,7 +123,30 @@ Item {
         }
     }
 
-    // --- Periodic refresh (catches signal strength changes, disconnects) ---
+    // --- NM state monitor (catches wake-from-sleep, reconnects, disconnects) ---
+    // nmcli monitor prints a line on every NM state change, including after suspend.
+    // This is more reliable than a periodic timer alone.
+    Process {
+        id: nmMonitor
+        command: ["nmcli", "monitor"]
+        running: true
+
+        stdout: SplitParser {
+            onRead: function(line) {
+                // Any NM state change triggers a re-check
+                netCheckProc.running = true
+            }
+        }
+
+        onExited: function(code, status) {
+            // If monitor exits (e.g. NM restarted), restart it
+            if (code !== 0) {
+                nmMonitor.running = true
+            }
+        }
+    }
+
+    // --- Periodic refresh fallback (catches signal strength changes) ---
     Timer {
         interval: 10000
         running: true
@@ -132,10 +155,15 @@ Item {
     }
 
     readonly property string iconNerd: {
-        if (root.airplaneMode) return ""     // nf-fa-plane
-        if (!root.connected) return ""      // nf-fa-chain_broken
-        if (root.isWifi) return ""           // nf-fa-wifi
-        return "󰈀"                           // nf-mdi-lan (ethernet)
+        if (root.airplaneMode) return "󰀝"     // md-airplane
+        if (!root.connected) return "󰌺"      // md-link_variant_off
+        if (root.isWifi) {
+            if (root.signalPct >= 66) return "󰤥"  // md-wifi_strength_3 (3 bars)
+            if (root.signalPct >= 33) return "󰤢"  // md-wifi_strength_2 (2 bars)
+            if (root.signalPct > 0)  return "󰤟"  // md-wifi_strength_1 (1 bar)
+            return "󰤭"                         // md-wifi_strength_off (0 bars)
+        }
+        return "󰈀"                           // md-ethernet
     }
 
     // Pre-compute left edge via parent chain
@@ -210,7 +238,7 @@ Item {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
-            font.pixelSize: Theme.barFontSize
+            font.pixelSize: Theme.mdiFontSize
             text: root.iconNerd
             color: root.connected ? Theme.barText : Theme.textSurf
         }

@@ -43,6 +43,7 @@ Singleton {
 
     readonly property string fontFam: "BlexMono Nerd Font"
     readonly property int barFontSize: 15
+    readonly property int mdiFontSize: 18
     readonly property int launchFontSize: 14
 
     function setMode(newMode) {
