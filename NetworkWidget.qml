@@ -11,37 +11,60 @@ Item {
     required property var barWindow
     required property var barContent
 
-    // --- Connected device detection via hidden Repeater ---
+    // --- Connected device detection via nmcli (more reliable than Repeater) ---
     property bool connected: false
     property bool isWifi: false
-    property string netName: ""
     property int signalPct: 0
 
-    Item {
-        Repeater {
-            model: Networking.devices
+    // Single nmcli call to check wifi connection state
+    Process {
+        id: netCheckProc
+        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep '^yes' | head -1"]
+        running: true  // runs at construction, before widget renders
 
-            delegate: Item {
-                required property var modelData
-
-                onModelDataChanged: {
-                    if (modelData && modelData.connected) {
-                        root.connected = true
-                        root.isWifi = modelData.type === 1
-                    }
+        stdout: SplitParser {
+            onRead: function(line) {
+                var parts = line.trim().split(":")
+                if (parts.length >= 3) {
+                    root.connected = true
+                    root.isWifi = true
+                    root.signalPct = parseInt(parts[2]) || 0
                 }
+            }
+        }
 
-                Component.onCompleted: {
-                    if (modelData && modelData.connected) {
-                        root.connected = true
-                        root.isWifi = modelData.type === 1
-                    }
-                }
+        // If no wifi output, check for ethernet
+        onExited: function(code, status) {
+            if (code !== 0) {
+                ethCheckProc.running = true
             }
         }
     }
 
-    // --- Pre-computed device info for the popup ---
+    Process {
+        id: ethCheckProc
+        command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device status | grep -E ':ethernet:connected$' | head -1"]
+        running: false
+
+        stdout: SplitParser {
+            onRead: function(line) {
+                var parts = line.trim().split(":")
+                if (parts.length >= 3) {
+                    root.connected = true
+                    root.isWifi = false
+                }
+            }
+        }
+
+        onExited: function(code, status) {
+            if (code !== 0) {
+                root.connected = false
+                root.isWifi = false
+                root.signalPct = 0
+            }
+        }
+    }
+
     readonly property string networkDevices: {
         if (!Networking || !Networking.devices) return "";
         var devs = Networking.devices.values;
@@ -73,22 +96,13 @@ Item {
         return lines.join("\n");
     }
 
-    readonly property int connectedCount: {
-        if (!Networking || !Networking.devices) return 0;
-        var devs = Networking.devices.values;
-        var count = 0;
-        for (var i = 0; i < devs.length; i++) {
-            if (devs[i].connected) count++;
-        }
-        return count;
-    }
-
-    // --- Airplane mode detection (check rfkill soft-block via nmcli) ---
+    // --- Airplane mode detection ---
     property bool airplaneMode: false
 
     Process {
         id: rfkillCheck
-        command: ["sh", "-c", "rfkill list | grep -q 'Soft blocked: yes' && echo yes || echo no"]
+        command: ["sh", "-c", "nmcli radio wifi | grep -Fxq enabled && echo no || echo yes"]
+        running: true
 
         stdout: SplitParser {
             onRead: function(line) {
@@ -97,42 +111,24 @@ Item {
         }
     }
 
-    // Re-check when wifi state changes (catches function key presses)
     Connections {
         target: Networking
-        function onWifiEnabledChanged() { rfkillCheck.running = true }
-        function onWifiHardwareEnabledChanged() { rfkillCheck.running = true }
-    }
-
-    // Initial check on load
-    Component.onCompleted: { rfkillCheck.running = true }
-
-    // --- Get network name and signal via nmcli (for bar display) ---
-    Process {
-        id: nmcliProc
-        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep '^yes' | head -1"]
-        running: root.connected && root.isWifi
-
-        stdout: SplitParser {
-            onRead: function(line) {
-                var parts = line.trim().split(":")
-                if (parts.length >= 3) {
-                    root.netName = parts[1] || "WiFi"
-                    root.signalPct = parseInt(parts[2]) || 0
-                }
-            }
+        function onWifiEnabledChanged() {
+            rfkillCheck.running = true
+            netCheckProc.running = true
+        }
+        function onWifiHardwareEnabledChanged() {
+            rfkillCheck.running = true
+            netCheckProc.running = true
         }
     }
 
+    // --- Periodic refresh (catches signal strength changes, disconnects) ---
     Timer {
         interval: 10000
         running: true
         repeat: true
-        onTriggered: {
-            if (root.connected && root.isWifi) {
-                nmcliProc.running = true
-            }
-        }
+        onTriggered: netCheckProc.running = true
     }
 
     readonly property string iconNerd: {
@@ -185,7 +181,6 @@ Item {
                 }
                 spacing: 3
 
-                // --- Device list ---
                 Text {
                     text: root.networkDevices
                     font.pixelSize: 12
@@ -194,7 +189,6 @@ Item {
                     lineHeight: 1.6
                 }
 
-                // --- Empty state ---
                 Text {
                     text: root.airplaneMode ? "Airplane mode" : "No active connections"
                     font.pixelSize: 12

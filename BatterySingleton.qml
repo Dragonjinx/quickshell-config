@@ -5,6 +5,8 @@ import Quickshell.Io
 import QtQuick
 
 // Reads battery info directly from sysfs — no UPower dependency.
+// Auto-detects the battery device name (BAT0, BAT1, etc.) and
+// falls back to charge_now/current_now/charge_full if energy_* files don't exist.
 Singleton {
     id: root
 
@@ -13,10 +15,13 @@ Singleton {
     property bool charging: status === "Charging"
     property bool pluggedIn: status === "Full"
 
-    // Time remaining raw values (µWh / µW)
+    // Time remaining raw values (µWh / µW or µAh / µA)
     property int energyNow: 0
     property int powerNow: 0
     property int energyFull: 0
+
+    // Auto-detected battery device name
+    property string batteryName: "BAT0"
 
     readonly property string displayText: {
         if (percentage < 0) return "\u2014"
@@ -44,72 +49,59 @@ Singleton {
         return h + "h " + m + "m"
     }
 
-    // Read capacity
+    // Detect battery name and energy vs charge files at startup
     Process {
-        id: capProc
-        command: ["cat", "/sys/class/power_supply/BAT0/capacity"]
+        id: detectProc
+        command: ["sh", "-c", "ls /sys/class/power_supply/ | grep -E '^BAT' | head -1 || echo BAT0"]
         running: true
         stdout: SplitParser {
-            onRead: line => { root.percentage = parseInt(line) }
+            onRead: function(line) {
+                var name = line.trim()
+                if (name !== "") {
+                    root.batteryName = name
+                    readBattery.running = true
+                }
+            }
         }
     }
 
-    // Read status
+    // Single process to read all battery values atomically
     Process {
-        id: statusProc
-        command: ["cat", "/sys/class/power_supply/BAT0/status"]
-        running: true
-        stdout: SplitParser {
-            onRead: line => { root.status = line.trim() }
-        }
-    }
+        id: readBattery
+        command: ["sh", "-c", "BAT=" + root.batteryName + "; " +
+            "CAP=$(cat /sys/class/power_supply/$BAT/capacity 2>/dev/null || echo -1); " +
+            "STA=$(cat /sys/class/power_supply/$BAT/status 2>/dev/null || echo Unknown); " +
+            "ENOW=$(cat /sys/class/power_supply/$BAT/energy_now 2>/dev/null || cat /sys/class/power_supply/$BAT/charge_now 2>/dev/null || echo 0); " +
+            "ENOW=$((ENOW)); " +  // force integer
+            "PNOW=$(cat /sys/class/power_supply/$BAT/power_now 2>/dev/null || cat /sys/class/power_supply/$BAT/current_now 2>/dev/null || echo 0); " +
+            "PNOW=$((PNOW)); " +
+            "EFULL=$(cat /sys/class/power_supply/$BAT/energy_full 2>/dev/null || cat /sys/class/power_supply/$BAT/charge_full 2>/dev/null || echo 0); " +
+            "EFULL=$((EFULL)); " +
+            "echo \"$CAP|$STA|$ENOW|$PNOW|$EFULL\""]
+        running: false  // triggered by detect or timer
 
-    // Read energy_now
-    Process {
-        id: energyNowProc
-        command: ["cat", "/sys/class/power_supply/BAT0/energy_now"]
-        running: true
         stdout: SplitParser {
-            onRead: line => { root.energyNow = parseInt(line) }
-        }
-    }
-
-    // Read power_now
-    Process {
-        id: powerNowProc
-        command: ["cat", "/sys/class/power_supply/BAT0/power_now"]
-        running: true
-        stdout: SplitParser {
-            onRead: line => { root.powerNow = parseInt(line) }
-        }
-    }
-
-    // Read energy_full
-    Process {
-        id: energyFullProc
-        command: ["cat", "/sys/class/power_supply/BAT0/energy_full"]
-        running: true
-        stdout: SplitParser {
-            onRead: line => { root.energyFull = parseInt(line) }
+            onRead: function(line) {
+                var parts = line.trim().split("|")
+                if (parts.length >= 5) {
+                    root.percentage = parseInt(parts[0]) || -1
+                    root.status = parts[1] || "Unknown"
+                    root.energyNow = parseInt(parts[2]) || 0
+                    root.powerNow = parseInt(parts[3]) || 0
+                    root.energyFull = parseInt(parts[4]) || 0
+                }
+            }
         }
     }
 
     // Listen for kernel uevents on power supply changes (plug/unplug)
-    // Provides instant notification without polling.
     Process {
         id: udevMonitor
-        command: ["udevadm", "monitor", "--kernel", "--subsystem-match=power_supply"]
+        command: ["sh", "-c", "udevadm monitor --kernel --subsystem-match=power_supply | grep -o --line-buffered 'BAT[0-9]*'"]
         running: true
         stdout: SplitParser {
-            onRead: line => {
-                if (line.indexOf("BAT0") !== -1) {
-                    // Battery state changed — re-read all values instantly
-                    capProc.running = true
-                    statusProc.running = true
-                    energyNowProc.running = true
-                    powerNowProc.running = true
-                    energyFullProc.running = true
-                }
+            onRead: function(line) {
+                readBattery.running = true
             }
         }
     }
@@ -119,13 +111,7 @@ Singleton {
         interval: 30000
         running: true
         repeat: true
-        onTriggered: {
-            capProc.running = true
-            statusProc.running = true
-            energyNowProc.running = true
-            powerNowProc.running = true
-            energyFullProc.running = true
-        }
+        onTriggered: { readBattery.running = true }
     }
 
     // Nerd Font icon based on state

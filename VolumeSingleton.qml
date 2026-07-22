@@ -60,4 +60,19 @@ Singleton {
         if (source && source.audio && source.audio.muted) return "" // nf-fa-microphone_slash
         return ""               // nf-fa-microphone
     }
+
+    // Sync mute LEDs directly from PipeWire state (same source as the icon bindings)
+    onMicMutedChanged: {
+        Quickshell.execDetached(["brightnessctl", "-d", "platform::micmute", "set", micMuted ? "1" : "0"])
+    }
+
+    onMutedChanged: {
+        Quickshell.execDetached(["brightnessctl", "-d", "platform::mute", "set", muted ? "1" : "0"])
+    }
+
+    Component.onCompleted: {
+        // Sync initial state
+        Quickshell.execDetached(["brightnessctl", "-d", "platform::micmute", "set", micMuted ? "1" : "0"])
+        Quickshell.execDetached(["brightnessctl", "-d", "platform::mute", "set", muted ? "1" : "0"])
+    }
 }
