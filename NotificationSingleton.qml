@@ -19,9 +19,8 @@ Singleton {
     property var activeToasts: []
     property int toastVersion: 0
     property ListModel toastAnimModel: ListModel {}
-
-    // Dismissing animation tracker — ids of toasts currently animating out
-    property var dismissingIds: []
+    property var toastQueue: []
+    property bool toastAnimBusy: false
 
     // ── Notification Server (single instance) ───────────────
     NotificationServer {
@@ -38,7 +37,6 @@ Singleton {
                 return
             }
 
-            // Store as plain JS object for history
             var notif = {
                 id: notification.id,
                 appName: notification.appName,
@@ -60,7 +58,6 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Queue if animating, otherwise show immediately
             if (root.toastAnimBusy) {
                 root.toastQueue.push(notif)
             } else {
@@ -73,15 +70,16 @@ Singleton {
         }
     }
 
-    // ── Queue and busy state ────────────────────────────────
-    property var toastQueue: []
-    property bool toastAnimBusy: false
-
-    // ── Show a single toast ─────────────────────────────────
+    // ── Show toast — remove oldest immediately if full ──────
     function _showToast(notif) {
         root.toastAnimBusy = true
 
-        // Update var array
+        if (root.toastAnimModel.count >= 4) {
+            root.toastAnimModel.remove(root.toastAnimModel.count - 1)
+        }
+
+        root.toastAnimModel.insert(0, notif)
+
         var toasts = [notif].concat(root.activeToasts)
         if (toasts.length > 4) {
             toasts = toasts.slice(0, 4)
@@ -89,69 +87,25 @@ Singleton {
         root.activeToasts = toasts
         root.toastVersion++
 
-        // If stack is full, dismiss the oldest with animation first
-        if (root.toastAnimModel.count >= 4) {
-            var oldestId = root.toastAnimModel.get(root.toastAnimModel.count - 1).id
-            root._dismissAndInsert(oldestId, notif)
-        } else {
-            // Just insert directly
-            root.toastAnimModel.insert(0, notif)
-            gateTimer.interval = 300
-            gateTimer.running = true
-        }
+        gateTimer.interval = 300
+        gateTimer.running = true
     }
 
-    // ── Dismiss oldest, then insert new ─────────────────────
-    function _dismissAndInsert(oldestId, newNotif) {
-        // Mark oldest as dismissing (starts the exit animation in the delegate)
-        root.dismissingIds = root.dismissingIds.concat([oldestId])
-        root.toastVersion++
-
-        // Wait for animation to play, then remove and insert
-        dismissTimer.oldestIndex = -1
-        dismissTimer.newNotif = newNotif
-        dismissTimer.running = true
-    }
-
-    // ── Timer: wait for dismiss animation, then swap ────────
-    Timer {
-        id: dismissTimer
-        interval: 300
-        running: false
-        repeat: false
-        property int oldestIndex: -1
-        property var newNotif: null
-
-        onTriggered: {
-            if (root.toastAnimModel.count > 0) {
-                var lastId = root.toastAnimModel.get(root.toastAnimModel.count - 1).id
-                root.toastAnimModel.remove(root.toastAnimModel.count - 1)
-                // Clean up dismissing id
-                root.dismissingIds = root.dismissingIds.filter(id => id !== lastId)
-            }
-            root.toastAnimModel.insert(0, dismissTimer.newNotif)
-            // Unblock queue
-            gateTimer.interval = 350
-            gateTimer.running = true
-        }
-    }
-
-    // ── Gate timer — unblocks queue after animations finish ─
+    // ── Gate timer — unblocks queue after add+mwove animate ─
     Timer {
         id: gateTimer
-        interval: 350
+        interval: 300
         running: false
         repeat: false
         onTriggered: {
             root.toastAnimBusy = false
             if (root.toastQueue.length > 0) {
-                var nextNotif = root.toastQueue.shift()
-                root._showToast(nextNotif)
+                root._showToast(root.toastQueue.shift())
             }
         }
     }
 
-    // ── Toast expiry checker (runs every second) ─────────────
+    // ── Toast expiry ────────────────────────────────────────
     Timer {
         id: expiryTimer
         interval: 1000
@@ -159,20 +113,18 @@ Singleton {
         repeat: true
         onTriggered: {
             var now = new Date()
+            var expired = []
             for (var i = root.toastAnimModel.count - 1; i >= 0; i--) {
                 var t = root.toastAnimModel.get(i)
-                // Only expire if not already dismissing
-                if ((now - t._shownAt) >= 4000 && !root.dismissingIds.includes(t.id)) {
-                    // Start dismiss animation, then remove
-                    var expId = t.id
-                    root.dismissingIds = root.dismissingIds.concat([expId])
-                    root.toastVersion++
-                    expireRemoveTimer.pendingId = expId
-                    expireRemoveTimer.running = true
+                if ((now - t._shownAt) >= 4000) {
+                    expired.push(i)
                 }
             }
+            // Remove in reverse order to preserve indices
+            for (var j = expired.length - 1; j >= 0; j--) {
+                root.toastAnimModel.remove(expired[j])
+            }
 
-            // Sync var array
             var keep = []
             for (var i = 0; i < root.activeToasts.length; i++) {
                 var t = root.activeToasts[i]
@@ -191,34 +143,9 @@ Singleton {
         }
     }
 
-    // ── Timer: remove expired toast after dismiss animation ─
-    Timer {
-        id: expireRemoveTimer
-        interval: 300
-        running: false
-        repeat: false
-        property int pendingId: -1
-        onTriggered: {
-            for (var i = 0; i < root.toastAnimModel.count; i++) {
-                if (root.toastAnimModel.get(i).id === expireRemoveTimer.pendingId) {
-                    root.toastAnimModel.remove(i)
-                    break
-                }
-            }
-            root.dismissingIds = root.dismissingIds.filter(id => id !== expireRemoveTimer.pendingId)
-            expireRemoveTimer.pendingId = -1
-        }
-    }
-
-    // ── Check if a toast is currently dismissing ────────────
-    function isDismissing(id) {
-        return root.dismissingIds.indexOf(id) >= 0
-    }
-
     // ── Public actions ─────────────────────────────────────
     function clearAll() {
         root.toastQueue = []
-        root.dismissingIds = []
         root.notificationHistory = []
         root.unreadHistory = []
         root.unreadCount = 0

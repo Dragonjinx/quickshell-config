@@ -67,10 +67,7 @@ Item {
                     NumberAnimation { property: "x"; from: 100; to: 0; duration: 250; easing.type: Easing.OutCubic }
                 }
 
-                // Removed toast slides off the right edge while fading and dropping
-                // Note: remove transition is not used; the delegate handles exit
-                // animation via its dismiss state and is removed from the model
-                // after the animation completes.
+                // Dismissal is instant — animations handled by add/move transitions only
 
                 // Displaced toasts wait for remove animation to finish before sliding
                 move: Transition {
@@ -147,21 +144,6 @@ Item {
                         }
                     }
 
-                    // ── Dismiss animation (slide right + drop) ──
-                    states: [
-                        State {
-                            name: "dismissing"
-                            when: NotificationSingleton.dismissingIds.indexOf(modelData.id) >= 0
-                            PropertyChanges { x: 300; y: 20 }
-                        }
-                    ]
-
-                    transitions: [
-                        Transition {
-                            to: "dismissing"
-                            NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.InCubic }
-                        }
-                    ]
                 }
             }
         }
