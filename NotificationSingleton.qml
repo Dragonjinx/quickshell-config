@@ -125,9 +125,9 @@ Singleton {
                 deferInsert.pendingNotif = null
 
                 // Start timer to unblock queue after animations complete
-                // Remove: 200ms + Move pause: 200ms + Add: 250ms + Move: 200ms
-                // Without remove: Add 250ms + Move 250ms
-                var delay = root._removeWasDone ? 700 : 300
+                // Remove: 250ms + Move pause: 250ms + Add: 250ms + Move: 250ms
+                // Without remove: Add: 250ms + Move: 250ms
+                var delay = root._removeWasDone ? 800 : 550
                 animGateTimer.interval = delay
                 animGateTimer.running = true
             }

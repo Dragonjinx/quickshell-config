@@ -67,17 +67,17 @@ Item {
                     NumberAnimation { property: "x"; from: 100; to: 0; duration: 250; easing.type: Easing.OutCubic }
                 }
 
-                // Removed toast slides right and drops down while fading
+                // Removed toast slides off the right edge while fading and dropping
                 remove: Transition {
-                    NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
-                    NumberAnimation { property: "x"; from: 0; to: 100; duration: 200; easing.type: Easing.InCubic }
-                    NumberAnimation { property: "y"; from: 0; to: 20; duration: 200; easing.type: Easing.InCubic }
+                    NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 250 }
+                    NumberAnimation { property: "x"; from: 0; to: 300; duration: 250; easing.type: Easing.InCubic }
+                    NumberAnimation { property: "y"; from: 0; to: 20; duration: 250; easing.type: Easing.InCubic }
                 }
 
                 // Displaced toasts wait for remove animation to finish before sliding
                 move: Transition {
-                    PauseAnimation { duration: 200 }
-                    NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutCubic }
+                    PauseAnimation { duration: 250 }
+                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
                 }
 
                 delegate: Rectangle {
