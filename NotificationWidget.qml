@@ -56,7 +56,7 @@ Item {
                     fill: parent
                     margins: 6
                 }
-                spacing: 6
+                spacing: 8
                 interactive: false
                 model: NotificationSingleton.toastAnimModel
                 verticalLayoutDirection: ListView.TopToBottom
@@ -84,9 +84,11 @@ Item {
                     required property var modelData
 
                     width: toastList.width
-                    height: Math.max(36, toastContent.implicitHeight + 10)
+                    height: Math.max(40, toastContent.implicitHeight + 14)
                     radius: 8
-                    color: toastHover.containsMouse ? Theme.surfCont : "transparent"
+                    color: toastHover.containsMouse ? Theme.surfBright : Theme.surfCont
+                    border.color: Theme.outlineVar
+                    border.width: 1
                     clip: true
 
                     // Left urgency bar
@@ -105,10 +107,10 @@ Item {
                         id: toastContent
                         anchors {
                             left: parent.left; leftMargin: 10
-                            top: parent.top; topMargin: 5
+                            top: parent.top; topMargin: 7
                             right: parent.right; rightMargin: 10
                         }
-                        spacing: 6
+                        spacing: 8
 
                         ColumnLayout {
                             Layout.fillWidth: true
