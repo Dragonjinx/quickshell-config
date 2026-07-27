@@ -220,7 +220,10 @@ Item {
 
                 // ── Empty state ──
                 Text {
-                    text: NotificationSingleton.notificationHistory.length === 0 ? "No notifications" : ""
+                    text: {
+                        NotificationSingleton.historyVersion;
+                        NotificationSingleton.notificationHistory.length === 0 ? "No notifications" : "";
+                    }
                     font.pixelSize: 12
                     color: Theme.textSurf
                     height: 40
@@ -229,7 +232,11 @@ Item {
 
                 // ── Notification list (newest first) ──
                 Repeater {
-                    model: NotificationSingleton.notificationHistory.slice().reverse()
+                    model: {
+                        // Force QML binding re-evaluation when history changes
+                        NotificationSingleton.historyVersion;
+                        NotificationSingleton.notificationHistory.slice().reverse();
+                    }
 
                     delegate: Rectangle {
                         required property var modelData

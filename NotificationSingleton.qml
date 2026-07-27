@@ -13,6 +13,7 @@ Singleton {
     property var notificationHistory: []
     property var unreadHistory: []
     property int unreadCount: 0
+    property int historyVersion: 0
     property var activeToast: null
 
     // ── Notification Server (single instance) ───────────────
@@ -50,6 +51,7 @@ Singleton {
             root.notificationHistory = root.notificationHistory.concat([notif])
             root.unreadHistory = root.unreadHistory.concat([notif])
             root.unreadCount = root.unreadHistory.length
+            root.historyVersion++
 
             // Show toast on all bars
             root.activeToast = notif
@@ -78,6 +80,7 @@ Singleton {
         root.notificationHistory = []
         root.unreadHistory = []
         root.unreadCount = 0
+        root.historyVersion++
         root.dismissToast()
     }
 
@@ -85,6 +88,7 @@ Singleton {
         notif.read = true
         root.unreadHistory = root.unreadHistory.filter(n => n.id !== notif.id)
         root.unreadCount = root.unreadHistory.length
+        root.historyVersion++
     }
 
     function dismissToast() {
