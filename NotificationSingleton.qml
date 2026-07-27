@@ -14,7 +14,10 @@ Singleton {
     property var unreadHistory: []
     property int unreadCount: 0
     property int historyVersion: 0
-    property var activeToast: null
+
+    // Active toasts shown on all bars — max 4, newest at the end, auto-dismiss after 4s
+    property var activeToasts: []
+    property int toastVersion: 0
 
     // ── Notification Server (single instance) ───────────────
     NotificationServer {
@@ -44,7 +47,8 @@ Singleton {
                 actions: notification.actions,
                 image: notification.image,
                 hasInlineReply: notification.hasInlineReply,
-                inlineReplyPlaceholder: notification.inlineReplyPlaceholder
+                inlineReplyPlaceholder: notification.inlineReplyPlaceholder,
+                _shownAt: new Date()
             }
 
             root.notificationHistory = root.notificationHistory.concat([notif])
@@ -52,18 +56,43 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Show toast on all bars
-            root.activeToast = notif
-            toastTimer.restart()
+            // Add to active toasts (newest last), cap at 4
+            var toasts = root.activeToasts.concat([notif])
+            if (toasts.length > 4) {
+                toasts = toasts.slice(toasts.length - 4)
+            }
+            root.activeToasts = toasts
+            root.toastVersion++
+
+            // Ensure expiry timer is running
+            if (!expiryTimer.running) {
+                expiryTimer.running = true
+            }
         }
     }
 
-    // ── Auto-dismiss toast ─────────────────────────────────
+    // ── Toast expiry checker (runs every second) ─────────────
     Timer {
-        id: toastTimer
-        interval: 4000
+        id: expiryTimer
+        interval: 1000
+        running: true
+        repeat: true
         onTriggered: {
-            root.activeToast = null
+            var now = new Date()
+            var keep = []
+            for (var i = 0; i < root.activeToasts.length; i++) {
+                var t = root.activeToasts[i]
+                if ((now - t._shownAt) < 4000) {
+                    keep.push(t)
+                }
+            }
+            if (keep.length !== root.activeToasts.length) {
+                root.activeToasts = keep
+                root.toastVersion++
+                if (keep.length === 0) {
+                    expiryTimer.running = false
+                }
+            }
         }
     }
 
@@ -73,7 +102,7 @@ Singleton {
         root.unreadHistory = []
         root.unreadCount = 0
         root.historyVersion++
-        root.dismissToast()
+        root.dismissAllToasts()
     }
 
     function markRead(notif) {
@@ -83,8 +112,17 @@ Singleton {
         root.historyVersion++
     }
 
-    function dismissToast() {
-        root.activeToast = null
-        toastTimer.stop()
+    function dismissAllToasts() {
+        root.activeToasts = []
+        root.toastVersion++
+        expiryTimer.running = false
+    }
+
+    function dismissToast(notif) {
+        root.activeToasts = root.activeToasts.filter(n => n.id !== notif.id)
+        root.toastVersion++
+        if (root.activeToasts.length === 0) {
+            expiryTimer.running = false
+        }
     }
 }

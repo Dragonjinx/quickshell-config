@@ -28,10 +28,10 @@ Item {
     // ── Per-bar UI state ───────────────────────────────────
     property bool historyOpen: false
 
-    // ── Toast popup (top-right, auto-dismiss) ────────────────
+    // ── Toast popup (stacked, max 4, newest at bottom) ─────
     PopupWindow {
         id: toastPopup
-        visible: NotificationSingleton.activeToast != null && !NotificationSingleton.dndEnabled
+        visible: NotificationSingleton.activeToasts.length > 0 && !NotificationSingleton.dndEnabled
         grabFocus: false
 
         anchor.window: root.barWindow
@@ -39,66 +39,97 @@ Item {
         anchor.rect.y: root.barWindow.height + 4
 
         implicitWidth: 320
-        implicitHeight: toastBody.implicitHeight + 20
+        implicitHeight: toastColumn.implicitHeight + 12
         color: "transparent"
 
         Rectangle {
             anchors.fill: parent
             radius: 10
-            color: toastBgColor()
+            color: Theme.surface
             border.color: Theme.outlineVar
             border.width: 1
 
-            // Left urgency bar
-            Rectangle {
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
-                }
-                width: 3
-                radius: 2
-                color: urgencyColor(NotificationSingleton.activeToast?.urgency)
-            }
-
             Column {
-                id: toastBody
+                id: toastColumn
                 anchors {
-                    left: parent.left; leftMargin: 14
-                    top: parent.top; topMargin: 10
-                    right: parent.right; rightMargin: 14
+                    fill: parent
+                    margins: 6
                 }
-                spacing: 2
+                spacing: 4
 
-                Text {
-                    text: NotificationSingleton.activeToast?.summary ?? ""
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: Theme.barText
-                    elide: Text.ElideRight
-                    width: parent.width
+                Repeater {
+                    model: {
+                        NotificationSingleton.toastVersion;
+                        NotificationSingleton.activeToasts;
+                    }
+
+                    delegate: Rectangle {
+                        required property var modelData
+
+                        width: parent.width
+                        height: Math.max(36, toastContent.implicitHeight + 10)
+                        radius: 8
+                        color: toastHover.containsMouse ? Theme.surfCont : "transparent"
+
+                        // Left urgency bar
+                        Rectangle {
+                            anchors {
+                                left: parent.left
+                                top: parent.top
+                                bottom: parent.bottom
+                            }
+                            width: 3
+                            radius: 2
+                            color: urgencyColor(modelData.urgency)
+                        }
+
+                        RowLayout {
+                            id: toastContent
+                            anchors {
+                                left: parent.left; leftMargin: 10
+                                top: parent.top; topMargin: 5
+                                right: parent.right; rightMargin: 10
+                            }
+                            spacing: 6
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 1
+
+                                Text {
+                                    text: modelData.summary
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    color: Theme.barText
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
+
+                                Text {
+                                    text: modelData.body
+                                    font.pixelSize: 11
+                                    color: Theme.textSurf
+                                    elide: Text.ElideRight
+                                    wrapMode: Text.WordWrap
+                                    Layout.fillWidth: true
+                                    maximumLineCount: 2
+                                    visible: text !== ""
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: toastHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                root.historyOpen = true
+                                NotificationSingleton.dismissToast(modelData)
+                            }
+                        }
+                    }
                 }
-
-                Text {
-                    text: NotificationSingleton.activeToast?.body ?? ""
-                    font.pixelSize: 12
-                    color: Theme.textSurf
-                    elide: Text.ElideRight
-                    wrapMode: Text.WordWrap
-                    width: parent.width
-                    visible: text !== ""
-                    maximumLineCount: 2
-                }
-            }
-        }
-
-        // Click toast to open history
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                root.historyOpen = true
-                NotificationSingleton.dismissToast()
             }
         }
     }
@@ -130,7 +161,7 @@ Item {
                     root.historyOpen = false
                     NotificationSingleton.unreadHistory = []
                     NotificationSingleton.unreadCount = 0
-                    NotificationSingleton.dismissToast()
+                    NotificationSingleton.dismissAllToasts()
                 }
             }
 
@@ -429,7 +460,7 @@ Item {
             if (root.historyOpen) {
                 NotificationSingleton.unreadHistory = []
                 NotificationSingleton.unreadCount = 0
-                NotificationSingleton.dismissToast()
+                NotificationSingleton.dismissAllToasts()
             }
         }
     }
@@ -439,12 +470,6 @@ Item {
         if (urgency === NotificationUrgency.Critical) return Theme.error
         if (urgency === NotificationUrgency.Low) return Theme.outline
         return Theme.primary
-    }
-
-    function toastBgColor() {
-        var u = NotificationSingleton.activeToast?.urgency
-        if (u === NotificationUrgency.Low) return Theme.surface
-        return Theme.surfCont
     }
 
     function appInitial(name) {
