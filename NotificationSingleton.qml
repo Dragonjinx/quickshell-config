@@ -44,8 +44,7 @@ Singleton {
                 actions: notification.actions,
                 image: notification.image,
                 hasInlineReply: notification.hasInlineReply,
-                inlineReplyPlaceholder: notification.inlineReplyPlaceholder,
-                ref: notification
+                inlineReplyPlaceholder: notification.inlineReplyPlaceholder
             }
 
             root.notificationHistory = root.notificationHistory.concat([notif])
@@ -64,19 +63,12 @@ Singleton {
         id: toastTimer
         interval: 4000
         onTriggered: {
-            if (root.activeToast) {
-                root.activeToast.ref.dismiss()
-                root.activeToast = null
-            }
+            root.activeToast = null
         }
     }
 
     // ── Public actions ─────────────────────────────────────
     function clearAll() {
-        for (var i = 0; i < root.notificationHistory.length; i++) {
-            var n = root.notificationHistory[i]
-            if (n && n.ref) n.ref.dismiss()
-        }
         root.notificationHistory = []
         root.unreadHistory = []
         root.unreadCount = 0
@@ -92,10 +84,7 @@ Singleton {
     }
 
     function dismissToast() {
-        if (root.activeToast) {
-            root.activeToast.ref.dismiss()
-            root.activeToast = null
-        }
+        root.activeToast = null
         toastTimer.stop()
     }
 }
