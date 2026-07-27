@@ -56,10 +56,10 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Add to active toasts (newest last), cap at 4
-            var toasts = root.activeToasts.concat([notif])
+            // Add to active toasts (newest at top), cap at 4
+            var toasts = [notif].concat(root.activeToasts)
             if (toasts.length > 4) {
-                toasts = toasts.slice(toasts.length - 4)
+                toasts = toasts.slice(0, 4)
             }
             root.activeToasts = toasts
             root.toastVersion++
