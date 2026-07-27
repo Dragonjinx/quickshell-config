@@ -42,24 +42,15 @@ Item {
         implicitHeight: toastList.contentHeight + 12
         color: "transparent"
 
-        Rectangle {
-            anchors.fill: parent
-            radius: 10
-            color: Theme.surface
-            border.color: Theme.outlineVar
-            border.width: 1
-            clip: true
-
-            ListView {
-                id: toastList
-                anchors {
-                    fill: parent
-                    margins: 6
-                }
-                spacing: 8
-                interactive: false
-                model: NotificationSingleton.toastAnimModel
-                verticalLayoutDirection: ListView.TopToBottom
+        ListView {
+            id: toastList
+            anchors {
+                fill: parent
+            }
+            spacing: 8
+            interactive: false
+            model: NotificationSingleton.toastAnimModel
+            verticalLayoutDirection: ListView.TopToBottom
 
                 // New toast slides in from right
                 add: Transition {
@@ -81,7 +72,9 @@ Item {
                     width: toastList.width
                     height: Math.max(40, toastContent.implicitHeight + 14)
                     radius: 8
-                    color: "transparent"
+                    color: toastHover.containsMouse ? Theme.surfBright : Theme.surfCont
+                    border.color: Theme.outlineVar
+                    border.width: 1
                     clip: true
 
                     // Left urgency bar
@@ -145,7 +138,6 @@ Item {
                 }
             }
         }
-    }
 
     // ── History / Control Center popup ──────────────────────
     PopupWindow {
