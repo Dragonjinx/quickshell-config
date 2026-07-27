@@ -72,11 +72,13 @@ Singleton {
     // ── Public actions ─────────────────────────────────────
     function clearAll() {
         for (var i = 0; i < root.notificationHistory.length; i++) {
-            root.notificationHistory[i].ref.dismiss()
+            var n = root.notificationHistory[i]
+            if (n && n.ref) n.ref.dismiss()
         }
         root.notificationHistory = []
         root.unreadHistory = []
         root.unreadCount = 0
+        root.dismissToast()
     }
 
     function markRead(notif) {
