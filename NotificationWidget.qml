@@ -147,19 +147,19 @@ Item {
                         }
                     }
 
-                    // ── Dismiss animation (fade + slide right + drop) ──
+                    // ── Dismiss animation (slide right + drop) ──
                     states: [
                         State {
                             name: "dismissing"
-                            when: NotificationSingleton.isDismissing(modelData.id)
-                            PropertyChanges { x: 300; y: 20; opacity: 0 }
+                            when: NotificationSingleton.dismissingIds.indexOf(modelData.id) >= 0
+                            PropertyChanges { x: 300; y: 20 }
                         }
                     ]
 
                     transitions: [
                         Transition {
                             to: "dismissing"
-                            NumberAnimation { properties: "x,y,opacity"; duration: 250; easing.type: Easing.InCubic }
+                            NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.InCubic }
                         }
                     ]
                 }
