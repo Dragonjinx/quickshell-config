@@ -28,7 +28,7 @@ Item {
     // ── Per-bar UI state ───────────────────────────────────
     property bool historyOpen: false
 
-    // ── Toast popup (stacked, max 4, newest at bottom) ─────
+    // ── Toast popup (stacked, max 4, animated) ──────────────
     PopupWindow {
         id: toastPopup
         visible: NotificationSingleton.activeToasts.length > 0 && !NotificationSingleton.dndEnabled
@@ -39,7 +39,7 @@ Item {
         anchor.rect.y: root.barWindow.height + 4
 
         implicitWidth: 320
-        implicitHeight: toastColumn.implicitHeight + 12
+        implicitHeight: toastList.contentHeight + 12
         color: "transparent"
 
         Rectangle {
@@ -48,85 +48,105 @@ Item {
             color: Theme.surface
             border.color: Theme.outlineVar
             border.width: 1
+            clip: true
 
-            Column {
-                id: toastColumn
+            ListView {
+                id: toastList
                 anchors {
                     fill: parent
                     margins: 6
                 }
-                spacing: 4
+                spacing: 6
+                interactive: false
+                model: NotificationSingleton.toastAnimModel
+                verticalLayoutDirection: ListView.TopToBottom
 
-                Repeater {
-                    model: {
-                        NotificationSingleton.toastVersion;
-                        NotificationSingleton.activeToasts;
+                // New toast slides in from right
+                add: Transition {
+                    NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 250 }
+                    NumberAnimation { property: "x"; from: 100; to: 0; duration: 250; easing.type: Easing.OutCubic }
+                }
+
+                // Existing toasts slide down when new one appears above
+                addDisplace: Transition {
+                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
+                }
+
+                // Removed toast slides out to right
+                remove: Transition {
+                    NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
+                    NumberAnimation { property: "x"; from: 0; to: 100; duration: 200; easing.type: Easing.InCubic }
+                }
+
+                // Remaining toasts slide up to fill gap
+                removeDisplace: Transition {
+                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
+                }
+
+                delegate: Rectangle {
+                    required property var modelData
+
+                    width: toastList.width
+                    height: Math.max(36, toastContent.implicitHeight + 10)
+                    radius: 8
+                    color: toastHover.containsMouse ? Theme.surfCont : "transparent"
+                    clip: true
+
+                    // Left urgency bar
+                    Rectangle {
+                        anchors {
+                            left: parent.left
+                            top: parent.top
+                            bottom: parent.bottom
+                        }
+                        width: 3
+                        radius: 2
+                        color: urgencyColor(modelData.urgency)
                     }
 
-                    delegate: Rectangle {
-                        required property var modelData
-
-                        width: parent.width
-                        height: Math.max(36, toastContent.implicitHeight + 10)
-                        radius: 8
-                        color: toastHover.containsMouse ? Theme.surfCont : "transparent"
-
-                        // Left urgency bar
-                        Rectangle {
-                            anchors {
-                                left: parent.left
-                                top: parent.top
-                                bottom: parent.bottom
-                            }
-                            width: 3
-                            radius: 2
-                            color: urgencyColor(modelData.urgency)
+                    RowLayout {
+                        id: toastContent
+                        anchors {
+                            left: parent.left; leftMargin: 10
+                            top: parent.top; topMargin: 5
+                            right: parent.right; rightMargin: 10
                         }
+                        spacing: 6
 
-                        RowLayout {
-                            id: toastContent
-                            anchors {
-                                left: parent.left; leftMargin: 10
-                                top: parent.top; topMargin: 5
-                                right: parent.right; rightMargin: 10
-                            }
-                            spacing: 6
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
 
-                            ColumnLayout {
+                            Text {
+                                text: modelData.summary
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: Theme.barText
+                                elide: Text.ElideRight
                                 Layout.fillWidth: true
-                                spacing: 1
+                            }
 
-                                Text {
-                                    text: modelData.summary
-                                    font.pixelSize: 13
-                                    font.bold: true
-                                    color: Theme.barText
-                                    elide: Text.ElideRight
-                                    Layout.fillWidth: true
-                                }
-
-                                Text {
-                                    text: modelData.body
-                                    font.pixelSize: 11
-                                    color: Theme.textSurf
-                                    elide: Text.ElideRight
-                                    wrapMode: Text.WordWrap
-                                    Layout.fillWidth: true
-                                    maximumLineCount: 2
-                                    visible: text !== ""
-                                }
+                            Text {
+                                text: modelData.body
+                                font.pixelSize: 11
+                                color: Theme.textSurf
+                                elide: Text.ElideRight
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                                maximumLineCount: 2
+                                visible: text !== ""
                             }
                         }
+                    }
 
-                        MouseArea {
-                            id: toastHover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                root.historyOpen = true
-                                NotificationSingleton.dismissToast(modelData)
-                            }
+                    MouseArea {
+                        id: toastHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.historyOpen = true
+                            NotificationSingleton.dismissToast(modelData)
                         }
                     }
                 }

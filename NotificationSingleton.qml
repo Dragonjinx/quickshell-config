@@ -15,9 +15,10 @@ Singleton {
     property int unreadCount: 0
     property int historyVersion: 0
 
-    // Active toasts shown on all bars — max 4, newest at the end, auto-dismiss after 4s
+    // Active toasts shown on all bars — max 4, newest at top, auto-dismiss after 4s
     property var activeToasts: []
     property int toastVersion: 0
+    property ListModel toastAnimModel: ListModel {}
 
     // ── Notification Server (single instance) ───────────────
     NotificationServer {
@@ -56,7 +57,13 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Add to active toasts (newest at top), cap at 4
+            // Add to animated toast model (newest at top)
+            root.toastAnimModel.insert(0, notif)
+            if (root.toastAnimModel.count > 4) {
+                root.toastAnimModel.remove(4, root.toastAnimModel.count - 4)
+            }
+
+            // Keep var array for history lookups
             var toasts = [notif].concat(root.activeToasts)
             if (toasts.length > 4) {
                 toasts = toasts.slice(0, 4)
@@ -79,6 +86,17 @@ Singleton {
         repeat: true
         onTriggered: {
             var now = new Date()
+            // Remove expired toasts from anim model one by one
+            var removed = false
+            for (var i = root.toastAnimModel.count - 1; i >= 0; i--) {
+                var t = root.toastAnimModel.get(i)
+                if ((now - t._shownAt) >= 4000) {
+                    root.toastAnimModel.remove(i)
+                    removed = true
+                }
+            }
+
+            // Keep var array in sync
             var keep = []
             for (var i = 0; i < root.activeToasts.length; i++) {
                 var t = root.activeToasts[i]
@@ -89,9 +107,10 @@ Singleton {
             if (keep.length !== root.activeToasts.length) {
                 root.activeToasts = keep
                 root.toastVersion++
-                if (keep.length === 0) {
-                    expiryTimer.running = false
-                }
+            }
+
+            if (root.toastAnimModel.count === 0) {
+                expiryTimer.running = false
             }
         }
     }
@@ -114,11 +133,21 @@ Singleton {
 
     function dismissAllToasts() {
         root.activeToasts = []
+        root.toastAnimModel.clear()
         root.toastVersion++
         expiryTimer.running = false
     }
 
     function dismissToast(notif) {
+        // Remove from anim model
+        for (var i = 0; i < root.toastAnimModel.count; i++) {
+            if (root.toastAnimModel.get(i).id === notif.id) {
+                root.toastAnimModel.remove(i)
+                break
+            }
+        }
+
+        // Remove from var array
         root.activeToasts = root.activeToasts.filter(n => n.id !== notif.id)
         root.toastVersion++
         if (root.activeToasts.length === 0) {
