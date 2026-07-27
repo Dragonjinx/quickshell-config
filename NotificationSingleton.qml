@@ -20,6 +20,14 @@ Singleton {
     property int toastVersion: 0
     property ListModel toastAnimModel: ListModel {}
 
+    // ── Toast display queue ─────────────────────────────────
+    // Queues notifications when an animation is in progress to prevent
+    // overlapping transitions when notifications arrive faster than
+    // animations can play.
+    property var toastQueue: []
+    property bool toastAnimBusy: false
+    property bool _removeWasDone: false
+
     // ── Notification Server (single instance) ───────────────
     NotificationServer {
         id: notifServer
@@ -57,21 +65,12 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Remove excess first so the oldest slides out before new one slides in
-            if (root.toastAnimModel.count >= 4) {
-                root.toastAnimModel.remove(4, root.toastAnimModel.count - 4)
+            // Queue or show immediately based on animation state
+            if (root.toastAnimBusy) {
+                root.toastQueue.push(notif)
+            } else {
+                root._showToast(notif)
             }
-            // Defer insert to next frame so remove animation finishes first
-            deferInsert.pendingNotif = notif
-            deferInsert.running = true
-
-            // Keep var array for history lookups
-            var toasts = [notif].concat(root.activeToasts)
-            if (toasts.length > 4) {
-                toasts = toasts.slice(0, 4)
-            }
-            root.activeToasts = toasts
-            root.toastVersion++
 
             // Ensure expiry timer is running
             if (!expiryTimer.running) {
@@ -80,7 +79,40 @@ Singleton {
         }
     }
 
-    // ── Deferred insert (fires next frame, after remove animation starts) ─
+    // ── Show a single toast with proper animation sequencing ──
+    function _showToast(notif) {
+        root.toastAnimBusy = true
+        root._removeWasDone = false
+
+        // Keep var array
+        var toasts = [notif].concat(root.activeToasts)
+        if (toasts.length > 4) {
+            toasts = toasts.slice(0, 4)
+        }
+        root.activeToasts = toasts
+        root.toastVersion++
+
+        // Remove excess first (oldest slides out)
+        if (root.toastAnimModel.count >= 4) {
+            root._removeWasDone = true
+            root.toastAnimModel.remove(4, root.toastAnimModel.count - 4)
+        }
+
+        // Defer insert to next frame so remove animation can start first
+        deferInsert.pendingNotif = notif
+        deferInsert.running = true
+    }
+
+    // ── Process next toast from queue ───────────────────────
+    function _processQueue() {
+        root.toastAnimBusy = false
+        if (root.toastQueue.length > 0) {
+            var nextNotif = root.toastQueue.shift()
+            root._showToast(nextNotif)
+        }
+    }
+
+    // ── Deferred insert (fires next frame, after remove starts) ─
     Timer {
         id: deferInsert
         interval: 0
@@ -91,7 +123,25 @@ Singleton {
             if (deferInsert.pendingNotif) {
                 root.toastAnimModel.insert(0, deferInsert.pendingNotif)
                 deferInsert.pendingNotif = null
+
+                // Start timer to unblock queue after animations complete
+                // Remove: 200ms + Move pause: 200ms + Add: 250ms + Move: 200ms
+                // Without remove: Add 250ms + Move 250ms
+                var delay = root._removeWasDone ? 700 : 300
+                animGateTimer.interval = delay
+                animGateTimer.running = true
             }
+        }
+    }
+
+    // ── Animation gate — unblocks queue after animations finish ─
+    Timer {
+        id: animGateTimer
+        interval: 700
+        running: false
+        repeat: false
+        onTriggered: {
+            root._processQueue()
         }
     }
 
@@ -104,12 +154,10 @@ Singleton {
         onTriggered: {
             var now = new Date()
             // Remove expired toasts from anim model one by one
-            var removed = false
             for (var i = root.toastAnimModel.count - 1; i >= 0; i--) {
                 var t = root.toastAnimModel.get(i)
                 if ((now - t._shownAt) >= 4000) {
                     root.toastAnimModel.remove(i)
-                    removed = true
                 }
             }
 
@@ -134,6 +182,7 @@ Singleton {
 
     // ── Public actions ─────────────────────────────────────
     function clearAll() {
+        root.toastQueue = []
         root.notificationHistory = []
         root.unreadHistory = []
         root.unreadCount = 0
@@ -149,6 +198,7 @@ Singleton {
     }
 
     function dismissAllToasts() {
+        root.toastAnimBusy = false
         root.activeToasts = []
         root.toastAnimModel.clear()
         root.toastVersion++
