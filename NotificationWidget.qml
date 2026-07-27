@@ -81,6 +81,7 @@ Item {
                     width: toastList.width
                     height: Math.max(40, toastContent.implicitHeight + 14)
                     radius: 8
+                    color: "transparent"
                     clip: true
 
                     // Left urgency bar
