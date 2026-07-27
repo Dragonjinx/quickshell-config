@@ -57,11 +57,13 @@ Singleton {
             root.unreadCount = root.unreadHistory.length
             root.historyVersion++
 
-            // Add to animated toast model (newest at top)
-            root.toastAnimModel.insert(0, notif)
-            if (root.toastAnimModel.count > 4) {
+            // Remove excess first so the oldest slides out before new one slides in
+            if (root.toastAnimModel.count >= 4) {
                 root.toastAnimModel.remove(4, root.toastAnimModel.count - 4)
             }
+            // Defer insert to next frame so remove animation finishes first
+            deferInsert.pendingNotif = notif
+            deferInsert.running = true
 
             // Keep var array for history lookups
             var toasts = [notif].concat(root.activeToasts)
@@ -74,6 +76,21 @@ Singleton {
             // Ensure expiry timer is running
             if (!expiryTimer.running) {
                 expiryTimer.running = true
+            }
+        }
+    }
+
+    // ── Deferred insert (fires next frame, after remove animation starts) ─
+    Timer {
+        id: deferInsert
+        interval: 0
+        running: false
+        repeat: false
+        property var pendingNotif: null
+        onTriggered: {
+            if (deferInsert.pendingNotif) {
+                root.toastAnimModel.insert(0, deferInsert.pendingNotif)
+                deferInsert.pendingNotif = null
             }
         }
     }
