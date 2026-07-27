@@ -67,19 +67,14 @@ Item {
                     NumberAnimation { property: "x"; from: 100; to: 0; duration: 250; easing.type: Easing.OutCubic }
                 }
 
-                // Existing toasts slide down when new one appears above
-                addDisplace: Transition {
-                    NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
-                }
-
                 // Removed toast slides out to right
                 remove: Transition {
                     NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
                     NumberAnimation { property: "x"; from: 0; to: 100; duration: 200; easing.type: Easing.InCubic }
                 }
 
-                // Remaining toasts slide up to fill gap
-                removeDisplace: Transition {
+                // Displaced toasts (slide up/down when items added or removed)
+                move: Transition {
                     NumberAnimation { property: "y"; duration: 250; easing.type: Easing.OutCubic }
                 }
 
