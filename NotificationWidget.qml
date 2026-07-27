@@ -81,9 +81,6 @@ Item {
                     width: toastList.width
                     height: Math.max(40, toastContent.implicitHeight + 14)
                     radius: 8
-                    color: toastHover.containsMouse ? Theme.surfBright : Theme.surfCont
-                    border.color: Theme.outlineVar
-                    border.width: 1
                     clip: true
 
                     // Left urgency bar
