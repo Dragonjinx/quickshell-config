@@ -1,7 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Networking
 import Quickshell.Bluetooth
 import Quickshell.Widgets
 
@@ -65,29 +63,7 @@ Item {
         return count;
     }
 
-    // --- Airplane mode detection (check rfkill soft-block via nmcli) ---
-    property bool airplaneMode: false
-
-    Process {
-        id: rfkillCheck
-        command: ["sh", "-c", "rfkill list | grep -q 'Soft blocked: yes' && echo yes || echo no"]
-
-        stdout: SplitParser {
-            onRead: function(line) {
-                root.airplaneMode = line.trim() === "yes"
-            }
-        }
-    }
-
-    // Re-check when wifi state changes (catches function key presses)
-    Connections {
-        target: Networking
-        function onWifiEnabledChanged() { rfkillCheck.running = true }
-        function onWifiHardwareEnabledChanged() { rfkillCheck.running = true }
-    }
-
-    // Initial check on load
-    Component.onCompleted: { rfkillCheck.running = true }
+    // Airplane mode is detected centrally via NetworkSingleton
     readonly property string iconNerd: !root.enabled ? "󰂲" : root.connectedCount > 0 ? "󰂱" : "󰂯"
 
     // Walk parent chain to compute left edge within barContent
@@ -172,7 +148,7 @@ Item {
 
                 // --- Empty state ---
                 Text {
-                    text: root.airplaneMode ? "Airplane mode" : (root.enabled ? "No paired devices" : "Bluetooth disabled")
+                    text: NetworkSingleton.airplaneMode ? "Airplane mode" : (root.enabled ? "No paired devices" : "Bluetooth disabled")
                     font.pixelSize: 12
                     color: Theme.textSurf
                     visible: root.connectedText === "" && root.pairedText === ""
