@@ -1,6 +1,7 @@
 pragma Singleton
 
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 import QtQuick
 
@@ -22,6 +23,13 @@ Singleton {
     property var toastQueue: []
     property bool toastAnimBusy: false
 
+    // Retained Notification QObject references for action invocation from history.
+    // Only populated for notifications with actions. Bounded to prevent memory leaks.
+    // Each has `tracked = true` to prevent the Notification from being destroyed.
+    // Released when dismissed or when pushed out by newer notifications.
+    property var _retainedNotifications: ({})
+    readonly property int _MAX_RETAINED: 20
+
     // ── Notification Server (single instance) ───────────────
     NotificationServer {
         id: notifServer
@@ -37,20 +45,37 @@ Singleton {
                 return
             }
 
+            // Serialize actions to plain JS objects (prevents dangling QObject pointers)
+            var serializedActions = (() => {
+                var list = notification.actions
+                var result = []
+                for (var i = 0; i < list.length; i++) {
+                    var a = list[i]
+                    result.push({ identifier: a.identifier, text: a.text })
+                }
+                return result
+            })()
+
             var notif = {
                 id: notification.id,
                 appName: notification.appName,
                 appIcon: notification.appIcon,
                 summary: notification.summary,
                 body: notification.body,
+                desktopEntry: notification.desktopEntry,
                 urgency: notification.urgency,
                 time: new Date(),
                 read: false,
-                actions: notification.actions,
+                actions: serializedActions,
                 image: notification.image,
                 hasInlineReply: notification.hasInlineReply,
                 inlineReplyPlaceholder: notification.inlineReplyPlaceholder,
                 _shownAt: new Date()
+            }
+
+            // Retain notification if it has actions (for invocation from history)
+            if (serializedActions.length > 0) {
+                root._retainNotification(notification)
             }
 
             root.notificationHistory = root.notificationHistory.concat([notif])
@@ -89,6 +114,44 @@ Singleton {
 
         gateTimer.interval = 300
         gateTimer.running = true
+    }
+
+    // ── Notification retention — prevents dangling QObject pointers ────
+    // Keeps Notification alive via `tracked = true` while in history.
+    // Bounded to _MAX_RETAINED; oldest are released first to limit memory.
+    function _retainNotification(notification) {
+        notification.tracked = true
+        _retainedNotifications[notification.id] = notification
+
+        // Enforce bound — release oldest by notification id (ascending = oldest)
+        var ids = Object.keys(_retainedNotifications).sort((a, b) => a - b)
+        while (ids.length > _MAX_RETAINED) {
+            var oldId = ids.shift()
+            var old = _retainedNotifications[oldId]
+            if (old) old.tracked = false
+            delete _retainedNotifications[oldId]
+        }
+    }
+
+    function _releaseNotification(id) {
+        var retained = _retainedNotifications[id]
+        if (retained) {
+            retained.tracked = false
+            delete _retainedNotifications[id]
+        }
+    }
+
+    // Invoke an action from a retained notification (safe, null-guarded)
+    function invokeAction(notifId, actionIdentifier) {
+        var notif = _retainedNotifications[notifId]
+        if (!notif || !notif.actions) return false
+        for (var i = 0; i < notif.actions.length; i++) {
+            if (notif.actions[i].identifier === actionIdentifier) {
+                notif.actions[i].invoke()
+                return true
+            }
+        }
+        return false
     }
 
     // ── Gate timer — unblocks queue after add+mwove animate ─
@@ -144,6 +207,46 @@ Singleton {
     }
 
     // ── Public actions ─────────────────────────────────────
+    // Handle click on a notification: invoke default action or open app.
+    // Returns true if an action was taken, false if caller should fall back.
+    function handleDefaultAction(notifData) {
+        // 1. Try to invoke "default" action from retained notification
+        var notif = _retainedNotifications[notifData.id]
+        if (notif && notif.actions && notif.actions.length > 0) {
+            for (var i = 0; i < notif.actions.length; i++) {
+                if (notif.actions[i].identifier === "default") {
+                    notif.actions[i].invoke()
+                    return true
+                }
+            }
+        }
+
+        // 2. Fall back: activate existing window or launch app
+        if (notifData.desktopEntry) {
+            // Try exact match first, then capitalized first letter (e.g. Alacritty),
+            // then fall back to launching. Works across all monitors.
+            var entry = notifData.desktopEntry
+            var cap = entry.charAt(0).toUpperCase() + entry.slice(1)
+            var cmd = "hyprctl dispatch focuswindow 'class:^(" + entry + ")$' 2>/dev/null"
+            if (cap !== entry) {
+                cmd += " || hyprctl dispatch focuswindow 'class:^(" + cap + ")$' 2>/dev/null"
+            }
+            cmd += " || " + entry
+            _launchProc.command = cmd
+            _launchProc.running = true
+            return true
+        }
+
+        return false
+    }
+
+    // ── Persistent process for launching apps via desktop entry ──
+    Process {
+        id: _launchProc
+        command: ""
+        running: false
+    }
+
     function clearAll() {
         root.toastQueue = []
         root.notificationHistory = []
@@ -151,6 +254,11 @@ Singleton {
         root.unreadCount = 0
         root.historyVersion++
         root.dismissAllToasts()
+        // Release all retained notification objects
+        for (var id in _retainedNotifications) {
+            _retainedNotifications[id].tracked = false
+        }
+        _retainedNotifications = {}
     }
 
     function markRead(notif) {
@@ -184,6 +292,7 @@ Singleton {
 
     // Remove a single notification from history (used by swipe-to-dismiss in Dash)
     function dismissNotification(notif) {
+        root._releaseNotification(notif.id)
         root.notificationHistory = root.notificationHistory.filter(n => n.id !== notif.id)
         root.unreadHistory = root.unreadHistory.filter(n => n.id !== notif.id)
         root.unreadCount = root.unreadHistory.length

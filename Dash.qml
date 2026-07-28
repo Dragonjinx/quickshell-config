@@ -320,6 +320,12 @@ PopupWindow {
         // Expand/collapse state
         property bool expanded: false
 
+        // Invoke an action from the notification's action list by identifier.
+        // Uses the retained Notification QObject from NotificationSingleton.
+        function _invokeAction(actionIdentifier) {
+            NotificationSingleton.invokeAction(modelData.id, actionIdentifier)
+        }
+
         width: listView.width
         height: expanded
             ? notifContent.implicitHeight + Theme.spacing.md
@@ -442,7 +448,6 @@ PopupWindow {
 
                         delegate: Rectangle {
                             required property var modelData
-                            property var actionRef: modelData
 
                             height: 22
                             implicitWidth: actionLabel.implicitWidth + 10
@@ -454,7 +459,7 @@ PopupWindow {
                             Text {
                                 id: actionLabel
                                 anchors.centerIn: parent
-                                text: actionRef.text
+                                text: modelData.text
                                 font.family: Theme.fontFam
                                 font.pixelSize: 10
                                 color: actionArea.containsMouse ? Theme.onPrim : Theme.primary
@@ -465,7 +470,7 @@ PopupWindow {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: actionRef.invoke()
+                                onClicked: _invokeAction(modelData.identifier)
                             }
                         }
                     }
@@ -498,13 +503,20 @@ PopupWindow {
                 } else if (Math.abs(parent.dragOffset) > 0) {
                     // Snap back
                     parent.x = 0
-                } else if (!hasExpandableContent()) {
-                    // No body/actions to expand — just mark read
-                    NotificationSingleton.markRead(modelData)
                 } else {
-                    // Toggle expand + mark read
-                    parent.expanded = !parent.expanded
-                    NotificationSingleton.markRead(modelData)
+                    // Click: try default action (open app) first
+                    if (!NotificationSingleton.handleDefaultAction(modelData)) {
+                        // No default action or desktop entry — fall back to expand/mark read
+                        if (!hasExpandableContent()) {
+                            NotificationSingleton.markRead(modelData)
+                        } else {
+                            parent.expanded = !parent.expanded
+                            NotificationSingleton.markRead(modelData)
+                        }
+                    } else {
+                        // Default action handled, still mark as read
+                        NotificationSingleton.markRead(modelData)
+                    }
                 }
                 parent.dragOffset = 0
             }

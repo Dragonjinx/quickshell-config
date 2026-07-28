@@ -110,7 +110,8 @@ Item {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        dashRef.dashOpen = true
+                        // Try default action (open app), then dismiss toast
+                        NotificationSingleton.handleDefaultAction(modelData)
                         NotificationSingleton.dismissToast(modelData)
                     }
                 }
