@@ -49,9 +49,10 @@ Item {
             GridLayout {
                 id: menuGrid
                 anchors {
-                    left: parent.left; leftMargin: 8
-                    top: parent.top; topMargin: 8
-                    right: parent.right; rightMargin: 8
+                    left: parent.left; leftMargin: 10
+                    top: parent.top; topMargin: 10
+                    right: parent.right; rightMargin: 10
+                    bottom: parent.bottom; bottomMargin: 10
                 }
                 columns: 2
                 columnSpacing: 6

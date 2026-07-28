@@ -68,7 +68,7 @@ Scope {
                     // --- RIGHT (content-driven, no artificial stretching) ---
                     RowLayout {
                         Layout.fillHeight: true
-                        spacing: 3
+                        spacing: 4
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }

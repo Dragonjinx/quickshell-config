@@ -105,7 +105,7 @@ Item {
                 id: deviceColumn
                 anchors {
                     left: parent.left; leftMargin: 10
-                    top: parent.top; topMargin: 8
+                    top: parent.top; topMargin: 10
                     right: parent.right; rightMargin: 10
                 }
                 spacing: 3

@@ -93,7 +93,7 @@ Item {
     Row {
         id: contentRow
         anchors.centerIn: parent
-        spacing: 4
+        spacing: 6
 
         Text {
             text: "D"
