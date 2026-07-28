@@ -33,6 +33,12 @@ Scope {
                 radius: 10
                 color: Theme.barBg
 
+                Dash {
+                    id: dash
+                    anchorWindow: barWindow
+                    barContent: barContent
+                }
+
                 RowLayout {
                     anchors {
                         fill: parent
@@ -66,13 +72,13 @@ Scope {
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
-                        NotificationWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
+                        ToastHost { barWindow: barWindow; dashRef: dash }
                         NetworkWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
                         BatteryWidget { Layout.fillHeight: true }
                         ResourceWidget { Layout.fillHeight: true }
                         TrayWidget { Layout.fillHeight: true }
                         PowerMenuWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
-                        ClockWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }
+                        ClockWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent; dashRef: dash }
                     }
                 }
             }

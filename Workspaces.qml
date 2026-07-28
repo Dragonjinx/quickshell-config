@@ -49,9 +49,9 @@ Row {
                 return 0.5
             }
 
-            Behavior on opacity { NumberAnimation { duration: 100 } }
-            Behavior on color { ColorAnimation { duration: 100 } }
-            Behavior on radius { NumberAnimation { duration: 100 } }
+            Behavior on opacity { Anim { type: Anim.FastEffects } }
+            Behavior on color { AnimC {} }
+            Behavior on radius { Anim { type: Anim.FastEffects } }
 
             // Animate width smoothly in both directions
             onIsActiveChanged: {
@@ -60,12 +60,11 @@ Row {
                 extraPadAnim.start()
             }
 
-            NumberAnimation {
+            Anim {
                 id: extraPadAnim
                 target: delegateRect
                 property: "extraPad"
-                duration: 150
-                easing.type: Easing.InOutQuad
+                type: Anim.FastSpatial
             }
 
             Text {
@@ -103,9 +102,9 @@ Row {
         radius: hovered ? 5 : 4
         opacity: hovered ? 0.7 : 1.0
 
-        Behavior on opacity { NumberAnimation { duration: 100 } }
-        Behavior on color { ColorAnimation { duration: 100 } }
-        Behavior on radius { NumberAnimation { duration: 100 } }
+        Behavior on opacity { Anim { type: Anim.FastEffects } }
+        Behavior on color { AnimC {} }
+        Behavior on radius { Anim { type: Anim.FastEffects } }
 
         Text {
             id: overflowTxt
