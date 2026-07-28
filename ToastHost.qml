@@ -31,7 +31,7 @@ Item {
         ListView {
             id: toastList
             anchors.fill: parent
-            spacing: 8
+            spacing: Theme.spacing.sm
             interactive: false
             model: NotificationSingleton.toastAnimModel
             verticalLayoutDirection: ListView.TopToBottom
@@ -51,7 +51,7 @@ Item {
 
                 width: toastList.width
                 height: Math.max(40, toastContent.implicitHeight + 14)
-                radius: 8
+                radius: Theme.rounding.sm
                 color: toastHover.containsMouse ? Theme.surfBright : Theme.surfCont
                 border.color: Theme.outlineVar
                 border.width: 1
@@ -72,11 +72,11 @@ Item {
                 RowLayout {
                     id: toastContent
                     anchors {
-                        left: parent.left; leftMargin: 10
-                        top: parent.top; topMargin: 7
-                        right: parent.right; rightMargin: 10
+                        left: parent.left; leftMargin: Theme.padding.sm
+                        top: parent.top; topMargin: Theme.spacing.sm
+                        right: parent.right; rightMargin: Theme.padding.sm
                     }
-                    spacing: 8
+                    spacing: Theme.spacing.sm
 
                     ColumnLayout {
                         Layout.fillWidth: true

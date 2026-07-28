@@ -42,10 +42,10 @@ Scope {
                 RowLayout {
                     anchors {
                         fill: parent
-                        topMargin: 4
-                        bottomMargin: 4
-                        leftMargin: 12
-                        rightMargin: 12
+                        topMargin: Theme.padding.xs
+                        bottomMargin: Theme.padding.xs
+                        leftMargin: Theme.padding.md
+                        rightMargin: Theme.padding.md
                     }
                     spacing: 0
 
@@ -53,7 +53,7 @@ Scope {
                     RowLayout {
                         Layout.fillHeight: true
                         Layout.minimumWidth: parent.width * 0.10
-                        spacing: 4
+                        spacing: Theme.spacing.xs
 
                         Workspaces { Layout.fillHeight: true }
                     }
@@ -68,7 +68,7 @@ Scope {
                     // --- RIGHT (content-driven, no artificial stretching) ---
                     RowLayout {
                         Layout.fillHeight: true
-                        spacing: 4
+                        spacing: Theme.spacing.xs
 
                         VolumeWidget { Layout.fillHeight: true }
                         BluetoothWidget { Layout.fillHeight: true; barWindow: barWindow; barContent: barContent }

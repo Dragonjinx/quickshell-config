@@ -46,6 +46,35 @@ Singleton {
     readonly property int mdiFontSize: 18
     readonly property int launchFontSize: 14
 
+    // ── Design tokens (Material 3 scale, matching caelestia) ──
+    readonly property QtObject spacing: QtObject {
+        readonly property int xs: 4
+        readonly property int sm: 8
+        readonly property int md: 12
+        readonly property int lg: 16
+        readonly property int xl: 20
+        readonly property int xxl: 28
+        readonly property int xxxl: 48
+    }
+    readonly property QtObject padding: QtObject {
+        readonly property int xs: 4
+        readonly property int sm: 8
+        readonly property int md: 12
+        readonly property int lg: 16
+        readonly property int xl: 20
+        readonly property int xxl: 28
+        readonly property int xxxl: 48
+    }
+    readonly property QtObject rounding: QtObject {
+        readonly property int xs: 4
+        readonly property int sm: 8
+        readonly property int md: 12
+        readonly property int lg: 16
+        readonly property int xl: 20
+        readonly property int xxl: 28
+        readonly property int xxxl: 48
+    }
+
     function setMode(newMode) {
         root.mode = newMode
         applyMode()

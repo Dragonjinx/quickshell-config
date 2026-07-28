@@ -12,17 +12,16 @@ Rectangle {
     signal activated()
 
     height: 44
-    radius: 8
+    radius: Theme.rounding.sm
     color: ma.containsMouse || root.selected ? Theme.launchSel : "transparent"
-
 
 
     Text {
         anchors {
             left: parent.left
-            leftMargin: 14
+            leftMargin: Theme.padding.md
             right: parent.right
-            rightMargin: 14
+            rightMargin: Theme.padding.md
             verticalCenter: parent.verticalCenter
         }
         text: entry.name

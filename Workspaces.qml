@@ -6,7 +6,7 @@ import Quickshell.Hyprland
 // Animation: 100ms transitions on opacity and color, matching Waybar's behaviour.
 Row {
     id: root
-    spacing: 4
+    spacing: Theme.spacing.xs
 
     // Build a lookup map from Hyprland.workspaces for quick access
     readonly property var wsMap: {

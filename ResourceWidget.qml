@@ -93,7 +93,7 @@ Item {
     Row {
         id: contentRow
         anchors.centerIn: parent
-        spacing: 6
+        spacing: Theme.spacing.sm
 
         Text {
             text: "D"

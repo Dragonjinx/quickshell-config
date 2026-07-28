@@ -56,19 +56,19 @@ PopupWindow {
             id: dashColumn
             anchors {
                 fill: parent
-                margins: 12
+                margins: Theme.padding.md
             }
-            spacing: 6
+            spacing: Theme.spacing.sm
 
             // ── Calendar ────────────────────────────────────
             Column {
                 width: parent.width
-                spacing: 6
+                spacing: Theme.spacing.sm
 
                 // Date header: bold day name + DD.MM.YYYY (right-aligned)
                 RowLayout {
                     width: parent.width
-                    spacing: 6
+                    spacing: Theme.spacing.sm
 
                     Item { Layout.fillWidth: true }
 
@@ -161,18 +161,18 @@ PopupWindow {
             // ── Notifications ───────────────────────────────
             Column {
                 width: parent.width
-                spacing: 6
+                spacing: Theme.spacing.sm
 
                 // Header row: [Clear | spacer | icon+text | DND]
                 RowLayout {
                     width: parent.width
-                    spacing: 6
+                    spacing: Theme.spacing.sm
 
                     // Clear all (left)
                     Rectangle {
                         Layout.preferredHeight: 26
-                        implicitWidth: clearLabel.implicitWidth + 10
-                        radius: 5
+                        implicitWidth: clearLabel.implicitWidth + Theme.padding.sm
+                        radius: Theme.rounding.xs
                         color: clearArea.containsMouse ? Theme.surfCont : "transparent"
 
                         Text {
@@ -208,7 +208,7 @@ PopupWindow {
                     Rectangle {
                         Layout.preferredHeight: 26
                         implicitWidth: dndLabel.implicitWidth + 14
-                        radius: 5
+                        radius: Theme.rounding.xs
                         color: dndArea.containsMouse
                             ? (NotificationSingleton.dndEnabled ? Theme.surfCont : Theme.error)
                             : (NotificationSingleton.dndEnabled ? Theme.error : Theme.surfCont)
@@ -322,9 +322,9 @@ PopupWindow {
 
         width: listView.width
         height: expanded
-            ? notifContent.implicitHeight + 12
-            : Math.min(notifContent.implicitHeight + 12, 72)
-        radius: 6
+            ? notifContent.implicitHeight + Theme.spacing.md
+            : Math.min(notifContent.implicitHeight + Theme.spacing.md, 72)
+        radius: Theme.rounding.xs
         color: ma.containsMouse ? Theme.surfCont : "transparent"
         clip: true
 
@@ -351,11 +351,11 @@ PopupWindow {
         RowLayout {
             id: notifContent
             anchors {
-                left: parent.left; leftMargin: 8
-                top: parent.top; topMargin: 6
-                right: parent.right; rightMargin: 8
+                left: parent.left; leftMargin: Theme.spacing.sm
+                top: parent.top; topMargin: Theme.spacing.sm
+                right: parent.right; rightMargin: Theme.spacing.sm
             }
-            spacing: 6
+            spacing: Theme.spacing.sm
 
             // App icon
             Rectangle {

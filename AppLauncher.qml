@@ -117,30 +117,30 @@ Item {
 
             Rectangle {
             anchors.fill: parent
-            radius: 12
+            radius: Theme.rounding.md
             color: Theme.launchBg
 
             Column {
                 id: layoutColumn
                 anchors.fill: parent
                 spacing: 0
-                topPadding: 6
-                bottomPadding: 6
+                topPadding: Theme.spacing.sm
+                bottomPadding: Theme.spacing.sm
 
                 Rectangle {
                     id: searchBox
                     width: parent.width
                     height: 44
                     color: Theme.launchSurface
-                    radius: 8
+                    radius: Theme.rounding.sm
 
                     RowLayout {
                         anchors {
                             fill: parent
-                            leftMargin: 14
-                            rightMargin: 14
+                            leftMargin: Theme.padding.md
+                            rightMargin: Theme.padding.md
                         }
-                        spacing: 10
+                        spacing: Theme.padding.sm
 
                         Text {
                             text: "󰍉"
@@ -180,8 +180,8 @@ Item {
                     id: listView
                     width: parent.width
                     height: Math.min(root.filteredApps.length * 48, 520)
-                    topMargin: 8
-                    bottomMargin: 4
+                    topMargin: Theme.padding.sm
+                    bottomMargin: Theme.padding.xs
                     model: filteredApps
                     clip: true
                     currentIndex: launcherWindow.selectedIndex
