@@ -124,7 +124,7 @@ Item {
                 id: layoutColumn
                 anchors.fill: parent
                 spacing: 0
-                topPadding: Theme.spacing.sm
+                topPadding: 0
                 bottomPadding: Theme.spacing.sm
 
                 Rectangle {
@@ -132,7 +132,7 @@ Item {
                     width: parent.width
                     height: 44
                     color: Theme.launchSurface
-                    radius: Theme.rounding.sm
+                    radius: 0
 
                     RowLayout {
                         anchors {
