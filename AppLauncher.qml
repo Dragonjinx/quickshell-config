@@ -132,7 +132,7 @@ Item {
                     width: parent.width
                     height: 44
                     color: Theme.launchSurface
-                    radius: 0
+                    radius: Theme.rounding.zero
 
                     RowLayout {
                         anchors {

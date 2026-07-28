@@ -66,6 +66,7 @@ Singleton {
         readonly property int xxxl: 48
     }
     readonly property QtObject rounding: QtObject {
+        readonly property int zero: 0
         readonly property int xs: 4
         readonly property int sm: 8
         readonly property int md: 12
