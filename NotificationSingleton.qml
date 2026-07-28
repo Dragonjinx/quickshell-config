@@ -227,9 +227,9 @@ Singleton {
             // then fall back to launching. Works across all monitors.
             var entry = notifData.desktopEntry
             var cap = entry.charAt(0).toUpperCase() + entry.slice(1)
-            var cmd = "hyprctl dispatch focuswindow 'class:^(" + entry + ")$' 2>/dev/null"
+            var cmd = "hyprctl 'dispatch hl.dsp.focus({window=\"class:^(" + entry + ")$\"})' 2>/dev/null"
             if (cap !== entry) {
-                cmd += " || hyprctl dispatch focuswindow 'class:^(" + cap + ")$' 2>/dev/null"
+                cmd += " || hyprctl 'dispatch hl.dsp.focus({window=\"class:^(" + cap + ")$\"})' 2>/dev/null"
             }
             cmd += " || " + entry
             _launchProc.command = cmd
