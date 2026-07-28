@@ -92,6 +92,13 @@ PopupWindow {
                     }
                 }
 
+                // Separator between date header and calendar
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: Theme.outlineVar
+                }
+
                 Row {
                     width: parent.width
                     spacing: 2
