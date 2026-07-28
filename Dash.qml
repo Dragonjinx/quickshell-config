@@ -178,7 +178,7 @@ PopupWindow {
                         Text {
                             id: clearLabel
                             anchors.centerIn: parent
-                            text: "󰎟"
+                            text: "✕"
                             font.family: Theme.fontFam
                             font.pixelSize: 13
                             color: Theme.textSurf
@@ -195,9 +195,9 @@ PopupWindow {
 
                     Item { Layout.fillWidth: true }
 
-                    // Notifications title (right-aligned)
+                    // Notifications title
                     Text {
-                        text: "󰂜 Notifications"
+                        text: "Notifications"
                         font.family: Theme.fontFam
                         font.pixelSize: 13
                         font.bold: true
