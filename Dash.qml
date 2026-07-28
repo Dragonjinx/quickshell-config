@@ -65,10 +65,12 @@ PopupWindow {
                 width: parent.width
                 spacing: 6
 
-                // Date header: bold day name + DD.MM.YYYY (replaces month/year header)
+                // Date header: bold day name + DD.MM.YYYY (right-aligned)
                 RowLayout {
                     width: parent.width
                     spacing: 6
+
+                    Item { Layout.fillWidth: true }
 
                     Text {
                         text: displayDay
@@ -88,8 +90,6 @@ PopupWindow {
                         font.pixelSize: 16
                         color: Theme.barText
                     }
-
-                    Item { Layout.fillWidth: true }
                 }
 
                 Row {
@@ -156,11 +156,39 @@ PopupWindow {
                 width: parent.width
                 spacing: 6
 
-                // Header row
+                // Header row: [Clear | spacer | icon+text | DND]
                 RowLayout {
                     width: parent.width
                     spacing: 6
 
+                    // Clear all (left)
+                    Rectangle {
+                        Layout.preferredHeight: 26
+                        implicitWidth: clearLabel.implicitWidth + 10
+                        radius: 5
+                        color: clearArea.containsMouse ? Theme.surfCont : "transparent"
+
+                        Text {
+                            id: clearLabel
+                            anchors.centerIn: parent
+                            text: "󰎟"
+                            font.family: Theme.fontFam
+                            font.pixelSize: 13
+                            color: Theme.textSurf
+                        }
+
+                        MouseArea {
+                            id: clearArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: NotificationSingleton.clearAll()
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    // Notifications title (right-aligned)
                     Text {
                         text: "󰂜 Notifications"
                         font.family: Theme.fontFam
@@ -169,9 +197,7 @@ PopupWindow {
                         color: Theme.barText
                     }
 
-                    Item { Layout.fillWidth: true }
-
-                    // DND toggle
+                    // DND toggle (right)
                     Rectangle {
                         Layout.preferredHeight: 26
                         implicitWidth: dndLabel.implicitWidth + 14
@@ -195,31 +221,6 @@ PopupWindow {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: NotificationSingleton.dndEnabled = !NotificationSingleton.dndEnabled
-                        }
-                    }
-
-                    // Clear all
-                    Rectangle {
-                        Layout.preferredHeight: 26
-                        implicitWidth: clearLabel.implicitWidth + 10
-                        radius: 5
-                        color: clearArea.containsMouse ? Theme.surfCont : "transparent"
-
-                        Text {
-                            id: clearLabel
-                            anchors.centerIn: parent
-                            text: "󰎟"
-                            font.family: Theme.fontFam
-                            font.pixelSize: 13
-                            color: Theme.textSurf
-                        }
-
-                        MouseArea {
-                            id: clearArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: NotificationSingleton.clearAll()
                         }
                     }
                 }
