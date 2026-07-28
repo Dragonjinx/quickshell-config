@@ -1,9 +1,8 @@
 import QtQuick
 import Quickshell
 
-// Clock display — shows 24h time by default.
+// Clock display — shows 24h time.
 // Click: opens the Dashboard (calendar + notification history).
-// Hover: shows current date (DD-MM-YYYY) as a tooltip below.
 Item {
     id: root
     implicitWidth: displayText.contentWidth + 16
@@ -12,10 +11,9 @@ Item {
     required property var dashRef  // reference to Dash popup
 
     readonly property string displayTime: TimeSingleton.time
-    readonly property string displayDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy")
 
-    // ── Time / date text ──
-    // Default: shows time. Hover: shows date (DD-MM-YYYY).
+    // ── Time text ──
+    // Shows 24h time. Click opens Dashboard.
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -23,7 +21,7 @@ Item {
         Text {
             id: displayText
             anchors.verticalCenter: parent.verticalCenter
-            text: mouseArea.containsMouse ? root.displayDate : root.displayTime
+            text: root.displayTime
             font.pixelSize: Theme.barFontSize
             font.bold: true
             color: Theme.barText

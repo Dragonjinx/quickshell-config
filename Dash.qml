@@ -22,12 +22,6 @@ PopupWindow {
         }
     }
 
-    // Close when clicking outside (focus lost to another window/widget)
-    onActiveFocusChanged: {
-        if (!activeFocus && dashOpen)
-            dashOpen = false
-    }
-
     function toggle() {
         dashOpen = !dashOpen
     }
@@ -71,13 +65,31 @@ PopupWindow {
                 width: parent.width
                 spacing: 6
 
-                Text {
+                // Date header: bold day name + DD.MM.YYYY (replaces month/year header)
+                RowLayout {
                     width: parent.width
-                    text: monthNames[currentMonth] + " " + currentYear
-                    font.pixelSize: 14
-                    font.bold: true
-                    color: Theme.barText
-                    horizontalAlignment: Text.AlignHCenter
+                    spacing: 6
+
+                    Text {
+                        text: displayDay
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: Theme.barText
+                    }
+
+                    Text {
+                        text: "·"
+                        font.pixelSize: 16
+                        color: Theme.outline
+                    }
+
+                    Text {
+                        text: displayDate
+                        font.pixelSize: 16
+                        color: Theme.barText
+                    }
+
+                    Item { Layout.fillWidth: true }
                 }
 
                 Row {
@@ -508,6 +520,9 @@ PopupWindow {
     readonly property int currentMonth: today.getMonth()
     readonly property int currentYear: today.getFullYear()
     readonly property int firstDayOfWeek: 1  // Monday
+
+    readonly property string displayDate: Qt.formatDateTime(today, "dd.MM.yyyy")
+    readonly property string displayDay: Qt.formatDateTime(today, "dddd")
 
     readonly property int daysInMonth: new Date(currentYear, currentMonth + 1, 0).getDate()
     readonly property int firstDayOffset: {
