@@ -12,7 +12,7 @@ PopupWindow {
     visible: dashOpen
     grabFocus: true
 
-    // Shared open state — toggled by ClockWidget or NotificationWidget
+    // Shared open state — toggled by ClockWidget or ToastHost
     property bool dashOpen: false
     onDashOpenChanged: {
         if (dashOpen) {
@@ -20,6 +20,12 @@ PopupWindow {
             NotificationSingleton.unreadCount = 0
             NotificationSingleton.dismissAllToasts()
         }
+    }
+
+    // Close when clicking outside (focus lost to another window/widget)
+    onActiveFocusChanged: {
+        if (!activeFocus && dashOpen)
+            dashOpen = false
     }
 
     function toggle() {
@@ -213,12 +219,11 @@ PopupWindow {
                     color: Theme.outlineVar
                 }
 
-                // ── Notification list (ListView with remove animations, following caelestia pattern) ──
+                // ── Notification list (ListView with remove + drag-dismiss animations) ──
                 ListView {
                     id: notifList
                     width: parent.width
                     height: Math.min(380, notifList.contentHeight)
-                    contentHeight: notifCol.implicitHeight
                     clip: true
                     interactive: true
                     ScrollBar.vertical: ScrollBar {
@@ -230,7 +235,9 @@ PopupWindow {
                         NotificationSingleton.notificationHistory.slice().reverse();
                     }
 
-                    delegate: NotifDelegate {}
+                    delegate: NotifDelegate {
+                        listView: notifList
+                    }
 
                     // When items are removed (dismiss/clear), animate them sliding out
                     remove: Transition {
@@ -266,7 +273,7 @@ PopupWindow {
                         }
                     }
 
-                    // Empty state overlay — shown via a Loader when count is 0
+                    // Empty state
                     Loader {
                         anchors.centerIn: parent
                         active: notifList.count === 0 && notifList.height > 40
@@ -285,13 +292,29 @@ PopupWindow {
     }
 
     // ── Notification delegate component ──
+    // Features: click-to-expand, swipe-to-dismiss, urgency bar, action buttons
     component NotifDelegate: Rectangle {
         required property var modelData
+        required property ListView listView
 
-        width: notifList.width
-        height: notifContent.implicitHeight + 12
+        // Expand/collapse state
+        property bool expanded: false
+
+        width: listView.width
+        height: expanded
+            ? notifContent.implicitHeight + 12
+            : Math.min(notifContent.implicitHeight + 12, 72)
         radius: 6
         color: ma.containsMouse ? Theme.surfCont : "transparent"
+        clip: true
+
+        Behavior on height {
+            Anim { type: Anim.FastSpatial }
+        }
+
+        // ── Drag-to-dismiss ──
+        property real dragStartX: 0
+        property real dragOffset: 0
 
         // Urgency bar
         Rectangle {
@@ -335,7 +358,7 @@ PopupWindow {
                 Layout.fillWidth: true
                 spacing: 1
 
-                // App name + time
+                // App name + time + expand indicator
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 4
@@ -348,6 +371,13 @@ PopupWindow {
                     }
 
                     Item { Layout.fillWidth: true }
+
+                    Text {
+                        text: expanded ? "▲" : "▼"
+                        font.pixelSize: 8
+                        color: Theme.outline
+                        visible: hasExpandableContent()
+                    }
 
                     Text {
                         text: formatTime(modelData.time)
@@ -366,9 +396,10 @@ PopupWindow {
                     color: Theme.barText
                     elide: Text.ElideRight
                     Layout.fillWidth: true
+                    maximumLineCount: expanded ? -1 : 1
                 }
 
-                // Body
+                // Body (only shown when expanded or short enough)
                 Text {
                     text: modelData.body
                     font.family: Theme.fontFam
@@ -377,14 +408,14 @@ PopupWindow {
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
-                    maximumLineCount: 2
-                    visible: text !== ""
+                    maximumLineCount: expanded ? -1 : 0
+                    visible: expanded || (modelData.body && modelData.body.length < 80)
                 }
 
-                // Action buttons
+                // Action buttons (only when expanded)
                 Row {
                     spacing: 4
-                    visible: modelData.actions && modelData.actions.length > 0
+                    visible: expanded && modelData.actions && modelData.actions.length > 0
 
                     Repeater {
                         model: modelData.actions
@@ -427,7 +458,48 @@ PopupWindow {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: NotificationSingleton.markRead(modelData)
+            drag.target: parent
+            drag.axis: Drag.XAxis
+
+            onPressed: event => {
+                parent.dragStartX = event.x
+            }
+
+            onPositionChanged: event => {
+                parent.dragOffset = event.x - parent.dragStartX
+                if (pressed && Math.abs(parent.dragOffset) > 0)
+                    parent.x = parent.dragOffset
+            }
+
+            onReleased: event => {
+                if (Math.abs(parent.dragOffset) > parent.width * 0.35) {
+                    // Dismiss
+                    NotificationSingleton.dismissNotification(modelData)
+                } else if (Math.abs(parent.dragOffset) > 0) {
+                    // Snap back
+                    parent.x = 0
+                } else if (!hasExpandableContent()) {
+                    // No body/actions to expand — just mark read
+                    NotificationSingleton.markRead(modelData)
+                } else {
+                    // Toggle expand + mark read
+                    parent.expanded = !parent.expanded
+                    NotificationSingleton.markRead(modelData)
+                }
+                parent.dragOffset = 0
+            }
+
+            // Snap-back animation
+            Behavior on x {
+                Anim { type: Anim.FastSpatial }
+            }
+        }
+
+        // Check if this notification has expandable content (body > 1 line or has actions)
+        function hasExpandableContent() {
+            if (modelData.actions && modelData.actions.length > 0) return true
+            if (modelData.body && modelData.body.length > 80) return true
+            return false
         }
     }
 

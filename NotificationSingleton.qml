@@ -181,4 +181,13 @@ Singleton {
             expiryTimer.running = false
         }
     }
+
+    // Remove a single notification from history (used by swipe-to-dismiss in Dash)
+    function dismissNotification(notif) {
+        root.notificationHistory = root.notificationHistory.filter(n => n.id !== notif.id)
+        root.unreadHistory = root.unreadHistory.filter(n => n.id !== notif.id)
+        root.unreadCount = root.unreadHistory.length
+        root.historyVersion++
+        root.dismissToast(notif)
+    }
 }

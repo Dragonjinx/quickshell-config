@@ -14,7 +14,8 @@ Item {
     readonly property string displayTime: TimeSingleton.time
     readonly property string displayDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy")
 
-    // ── Time text ──
+    // ── Time / date text ──
+    // Default: shows time. Hover: shows date (DD-MM-YYYY).
     Row {
         anchors.centerIn: parent
         spacing: 6
@@ -22,32 +23,9 @@ Item {
         Text {
             id: displayText
             anchors.verticalCenter: parent.verticalCenter
-            text: root.displayTime
+            text: mouseArea.containsMouse ? root.displayDate : root.displayTime
             font.pixelSize: Theme.barFontSize
             font.bold: true
-            color: Theme.barText
-        }
-    }
-
-    // ── Hover tooltip: shows date ──
-    Rectangle {
-        id: dateTooltip
-        visible: mouseArea.containsMouse && !dashRef.dashOpen
-        anchors {
-            top: parent.bottom; topMargin: 4
-            horizontalCenter: parent.horizontalCenter
-        }
-        implicitWidth: tooltipText.implicitWidth + 12
-        height: 22
-        radius: 4
-        color: Theme.surface
-        border.color: Theme.outlineVar
-
-        Text {
-            id: tooltipText
-            anchors.centerIn: parent
-            text: root.displayDate
-            font.pixelSize: 11
             color: Theme.barText
         }
     }
