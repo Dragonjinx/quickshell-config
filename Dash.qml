@@ -58,7 +58,7 @@ PopupWindow {
                 fill: parent
                 margins: 12
             }
-            spacing: 10
+            spacing: 6
 
             // ── Calendar ────────────────────────────────────
             Column {
@@ -352,7 +352,7 @@ PopupWindow {
             id: notifContent
             anchors {
                 left: parent.left; leftMargin: 8
-                top: parent.top; topMargin: 5
+                top: parent.top; topMargin: 6
                 right: parent.right; rightMargin: 8
             }
             spacing: 6
