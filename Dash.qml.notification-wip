@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Services.Notifications
+import Quickshell.Widgets
 
 // Dashboard — vertical stack of calendar + notification history in one popup.
 // Opens when the clock or notification bell is clicked.
@@ -363,20 +364,55 @@ PopupWindow {
             }
             spacing: Theme.spacing.sm
 
-            // App icon
-            Rectangle {
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
+            // Left slot: notification image (album art, photo) or app icon from papyrus
+            Item {
+                Layout.preferredWidth: 32
+                Layout.preferredHeight: 32
                 Layout.alignment: Qt.AlignTop
-                radius: 5
-                color: Theme.surfCont
+                Layout.topMargin: 2
 
-                Text {
-                    anchors.centerIn: parent
-                    text: appInitial(modelData.appName)
-                    font.family: Theme.fontFam
-                    font.pixelSize: 12
-                    color: Theme.primary
+                // Notification image hint (album art, photo preview) — replaces app icon
+                // App icon from notification image, clipped to rounded rect
+                Rectangle {
+                    width: 32; height: 32
+                    radius: 6
+                    clip: true
+                    color: "transparent"
+                    visible: modelData.image && modelData.image !== ""
+
+                    Image {
+                        anchors.fill: parent
+                        source: modelData.image || ""
+                        fillMode: Image.PreserveAspectCrop
+                        sourceSize { width: 32; height: 32 }
+                        smooth: true
+                    }
+                }
+
+                // App icon from icon theme (papyrus), fallback to initial letter
+                IconImage {
+                    id: appIcon
+                    anchors.fill: parent
+                    source: (modelData.image && modelData.image !== "")
+                        ? "" : (modelData.appIcon || modelData.desktopEntry || "")
+                    sourceSize { width: 32; height: 32 }
+                    visible: !(modelData.image && modelData.image !== "")
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 6
+                    color: Theme.surfCont
+                    visible: (appIcon.status === Image.Error || appIcon.source === "")
+                        && !(modelData.image && modelData.image !== "")
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: appInitial(modelData.appName)
+                        font.family: Theme.fontFam
+                        font.pixelSize: 14
+                        color: Theme.primary
+                    }
                 }
             }
 
