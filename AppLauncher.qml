@@ -18,30 +18,27 @@ Item {
     function launchApp(entry) {
         var cmd = entry.command.slice()
         if (entry.runInTerminal) {
-            cmd = ["alacritty", "-e"].concat(cmd)
+            cmd = ["kitty", "-e"].concat(cmd)
         }
         Quickshell.execDetached(["uwsm-app", "--"].concat(cmd))
     }
 
-    property var allApps: []
+    property var allApps: _sortApps(DesktopEntries.applications.values)
 
-    Component.onCompleted: {
-        Qt.callLater(() => {
-            var src = DesktopEntries.applications.values
-            var n = typeof src.length !== "undefined" ? src.length : 0
-            var apps = []
-            for (var i = 0; i < n; ++i) apps.push(src[i])
-            apps.sort(function(a, b) {
-                var nameA = (a.name || "").toLowerCase()
-                var nameB = (b.name || "").toLowerCase()
-                if (nameA < nameB) return -1
-                if (nameA > nameB) return 1
-                return 0
-            })
-            allApps = apps
+    function _sortApps(values) {
+        var n = typeof values.length !== "undefined" ? values.length : 0
+        var apps = []
+        for (var i = 0; i < n; ++i) apps.push(values[i])
+        apps.sort(function(a, b) {
+            var nameA = (a.name || "").toLowerCase()
+            var nameB = (b.name || "").toLowerCase()
+            if (nameA < nameB) return -1
+            if (nameA > nameB) return 1
+            return 0
         })
+        return apps
     }
-    readonly property var filteredApps: root._filter(root.allApps, root.filter)
+    property var filteredApps: root._filter(root.allApps, root.filter)
 
     function _filter(apps, f) {
         var trimmed = f.toLowerCase().trim()

@@ -210,22 +210,11 @@ Singleton {
         val = val.trim().replace(/'/g, "")
         if (val === "prefer-dark") {
             root.setMode("black")
-            alacrittySwitcher.command = ["cp", "-f", "/home/abhilekh/.config/alacritty/adarkkitty.toml", "/home/abhilekh/.config/alacritty/alacritty.toml"]
-            alacrittySwitcher.running = true
         } else if (val === "prefer-light") {
             root.setMode("white")
-            alacrittySwitcher.command = ["cp", "-f", "/home/abhilekh/.config/alacritty/alightkitty.toml", "/home/abhilekh/.config/alacritty/alacritty.toml"]
-            alacrittySwitcher.running = true
         } else {
             root.setMode("black")
-            alacrittySwitcher.command = ["cp", "-f", "/home/abhilekh/.config/alacritty/adarkkitty.toml", "/home/abhilekh/.config/alacritty/alacritty.toml"]
-            alacrittySwitcher.running = true
         }
     }
 
-    // Persistent process for switching Alacritty theme
-    Process {
-        id: alacrittySwitcher
-        running: false
-    }
 }

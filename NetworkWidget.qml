@@ -119,7 +119,7 @@ Item {
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onClicked: {
-            Quickshell.execDetached(["alacritty", "-e", "nmtui"])
+            Quickshell.execDetached(["kitty", "-e", "nmtui"])
         }
     }
 }

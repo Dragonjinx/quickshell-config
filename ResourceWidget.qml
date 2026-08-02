@@ -145,7 +145,7 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            Quickshell.execDetached(["alacritty", "-e", "btop"])
+            Quickshell.execDetached(["kitty", "-e", "btop"])
         }
     }
 }

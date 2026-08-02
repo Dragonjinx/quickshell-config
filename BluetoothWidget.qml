@@ -176,7 +176,7 @@ Item {
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onClicked: {
-            Quickshell.execDetached(["alacritty", "-e", "bluetoothctl"])
+            Quickshell.execDetached(["kitty", "-e", "bluetoothctl"])
         }
     }
 }
