@@ -49,7 +49,7 @@ quickshell-config/
 Add to your flake inputs:
 
 ```nix
-quickshell-config.url = "github:your-username/quickshell-config";
+quickshell-config.url = "github:Dragonjinx/quickshell-config";
 ```
 
 Then run with:
