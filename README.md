@@ -12,7 +12,7 @@ A Quickshell-based desktop shell that replaces **Waybar** and **Rofi** with a si
 | **Bluetooth status** | ✅ | Device list popup, click opens bluetoothctl |
 | **Network status** | ✅ | MDI wifi/ethernet icons with signal %, popup shows active connections |
 | **Power menu** (wlogout replacement) | ✅ | In-bar popup: Lock, Logout, Suspend, Hibernate, Shutdown, Reboot |
-| **Notification center** | ⬜ | Planned — `Quickshell.Services.Notifications` API available |
+| **Notification center** | ✅ | Planned — `Quickshell.Services.Notifications` API available |
 
 ## Structure
 
@@ -44,8 +44,6 @@ quickshell-config/
 
 ## Installation
 
-### Non-NixOS
-
 1. Install Quickshell from your distro's packages (see [quickshell.org](https://quickshell.org/docs/v0.3.0/guide/install-setup))
 2. Clone this repo to `~/.config/quickshell` (or use `--path`):
 
@@ -53,15 +51,3 @@ quickshell-config/
 git clone https://github.com/Dragonjinx/quickshell-config.git ~/.config/quickshell
 quickshell
 ```
-
-## Usage
-
-After starting Quickshell:
-
-- The top bar appears on all monitors
-- Press **Super+Space** or click the power icon to open the app launcher
-- Type to filter applications, use arrow keys to navigate, Enter to launch
-- Click volume to open wiremix; right-click to toggle mic
-- Click power icon ⏻ to show power menu (Lock, Logout, Suspend, Hibernate, Shutdown, Reboot)
-- Hover Bluetooth or Network icons for connection popups
-- Click battery to toggle between percentage and time remaining

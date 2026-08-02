@@ -23,19 +23,23 @@ Item {
         Quickshell.execDetached(["uwsm-app", "--"].concat(cmd))
     }
 
-    readonly property var allApps: {
-        var src = DesktopEntries.applications.values
-        var n = typeof src.length !== "undefined" ? src.length : 0
-        var apps = []
-        for (var i = 0; i < n; ++i) apps.push(src[i])
-        apps.sort(function(a, b) {
-            var nameA = (a.name || "").toLowerCase()
-            var nameB = (b.name || "").toLowerCase()
-            if (nameA < nameB) return -1
-            if (nameA > nameB) return 1
-            return 0
+    property var allApps: []
+
+    Component.onCompleted: {
+        Qt.callLater(() => {
+            var src = DesktopEntries.applications.values
+            var n = typeof src.length !== "undefined" ? src.length : 0
+            var apps = []
+            for (var i = 0; i < n; ++i) apps.push(src[i])
+            apps.sort(function(a, b) {
+                var nameA = (a.name || "").toLowerCase()
+                var nameB = (b.name || "").toLowerCase()
+                if (nameA < nameB) return -1
+                if (nameA > nameB) return 1
+                return 0
+            })
+            allApps = apps
         })
-        return apps
     }
     readonly property var filteredApps: root._filter(root.allApps, root.filter)
 
