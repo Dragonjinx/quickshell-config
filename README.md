@@ -44,35 +44,19 @@ quickshell-config/
 
 ## Installation
 
-### NixOS (recommended)
-
-Add to your flake inputs:
-
-```nix
-quickshell-config.url = "github:Dragonjinx/quickshell-config";
-```
-
-Then run with:
-
-```bash
-nix run .#shell
-```
-
-Or add to `environment.systemPackages` after building.
-
 ### Non-NixOS
 
 1. Install Quickshell from your distro's packages (see [quickshell.org](https://quickshell.org/docs/v0.3.0/guide/install-setup))
 2. Clone this repo to `~/.config/quickshell` (or use `--path`):
 
 ```bash
-git clone https://github.com/your-username/quickshell-config ~/.config/quickshell
+git clone https://github.com/Dragonjinx/quickshell-config.git ~/.config/quickshell
 quickshell
 ```
 
 ## Usage
 
-After starting Quickshell (via `exec-once` in Hyprland's config):
+After starting Quickshell:
 
 - The top bar appears on all monitors
 - Press **Super+Space** or click the power icon to open the app launcher
@@ -81,31 +65,3 @@ After starting Quickshell (via `exec-once` in Hyprland's config):
 - Click power icon ⏻ to show power menu (Lock, Logout, Suspend, Hibernate, Shutdown, Reboot)
 - Hover Bluetooth or Network icons for connection popups
 - Click battery to toggle between percentage and time remaining
-
-## Switching from Waybar + Rofi
-
-1. **Stop Waybar**: remove/comment the `exec-once = ~/.config/waybar/launch.sh` line in `~/.config/hypr/conf/autostart.conf`
-2. **Start Quickshell**: add `exec-once = quickshell` (or `exec-once = nix run .#shell` if using flakes)
-3. **Update keybinds**: change the `$mainMod, SUPER_L` bind in `~/.config/hypr/conf/keybindings/default.conf` to toggle Quickshell's launcher instead of Rofi.
-   → Instead of `pkill rofi || rofi -show drun`, you can use a Hyprland `GlobalShortcut` or keep the keybind as-is and have the launcher listen for it.
-4. **Keep Rofi** for any modes you still need (like run, filebrowser, window switcher) or port them to Quickshell later.
-
-## Configuration
-
-Edit `config/Theme.qml` to change colors. The current palette is based on your Matugen-generated colors.
-
-To add new modules:
-- Create a `.qml` file in `bar/` (or `launcher/` etc.)
-- Import and instantiate it in `Bar.qml` or `shell.qml`
-
-## Development
-
-```bash
-# Enter dev shell with qmlls LSP support
-nix develop
-
-# Run with live-reload
-quickshell -c /path/to/quickshell-config
-```
-
-Quickshell live-reloads on file save — just edit and see changes instantly.
