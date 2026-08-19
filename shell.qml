@@ -26,6 +26,10 @@ ShellRoot {
         running: true
     }
 
+    // Autostart applications (see Startup.qml) — launched from here so
+    // tray-dependent apps start AFTER the status-notifier tray host.
+    Startup {}
+
     // Toggle app launcher via Hyprland global shortcut
     GlobalShortcut {
         name: "toggle-launcher"
