@@ -206,15 +206,34 @@ Singleton {
         }
     }
 
+    // Persistent process to tell every running kitty instance to re-apply its
+    // auto theme (*-theme.auto.conf) for the current system color scheme.
+    // kitty's native portal trigger is unreliable on NixOS+Hyprland (#8811),
+    // so we supply the reload trigger ourselves via remote control.
+    Process {
+        id: kittyThemeSwitcher
+        running: false
+    }
+
     function applyDconfValue(val) {
         val = val.trim().replace(/'/g, "")
-        if (val === "prefer-dark") {
-            root.setMode("black")
-        } else if (val === "prefer-light") {
-            root.setMode("white")
-        } else {
-            root.setMode("black")
+        var newMode = "black"
+        var scheme = "dark"
+        if (val === "prefer-light") {
+            newMode = "white"
+            scheme = "light"
         }
+        root.setMode(newMode)
+
+        // listen_on unix:/tmp/kitty-rc -> /tmp/kitty-rc-<pid> per instance.
+        // simulate_color_scheme_preference_change forces kitty to re-pick its
+        // dark/light-theme.auto.conf and applies it to ALL windows (patch_colors).
+        kittyThemeSwitcher.command = ["sh", "-c",
+            "for s in /tmp/kitty-rc-*; do [ -S \"$s\" ] || continue; " +
+            "$HOME/.nix-profile/bin/kitten @ --to \"unix:$s\" action " +
+            "simulate_color_scheme_preference_change " + scheme +
+            " >/dev/null 2>&1 || true; done"]
+        kittyThemeSwitcher.running = true
     }
 
 }
