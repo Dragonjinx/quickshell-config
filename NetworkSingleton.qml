@@ -19,7 +19,11 @@ Singleton {
     // ── Wifi connection check ──────────────────────────────
     Process {
         id: netCheckProc
-        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep '^yes' | head -1"]
+        // grep -m1 prints only the first active wifi line, and (unlike a trailing
+        // `head -1`) still exits non-zero when nothing matches. A head -1 here
+        // always exits 0, which masked the disconnect and left the widget stuck
+        // on the last known signal instead of reporting Offline.
+        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep -m1 '^yes'"]
         running: true
 
         stdout: SplitParser {
@@ -43,7 +47,9 @@ Singleton {
     // ── Ethernet connection check ──────────────────────────
     Process {
         id: ethCheckProc
-        command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device status | grep -E ':ethernet:connected$' | head -1"]
+        // Same -m1 rationale as netCheckProc: preserves a non-zero exit code
+        // when no interface is connected, so the disconnect path runs.
+        command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device status | grep -m1 -E ':ethernet:connected$'"]
         running: false
 
         stdout: SplitParser {
