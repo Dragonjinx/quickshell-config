@@ -14,6 +14,11 @@
 //   - Tray-dependent apps (need a tray icon): use `running: false`
 //     and give them an id, then start them in the `onCompleted`
 //     handler at the bottom.
+//
+// All launches are guarded with a `pgrep` check using the bracket trick
+// (e.g. `pgrep -f '[k]itty'`) so a config RELOAD never relaunches an app
+// that's already running. Only a fresh login (nothing up yet) actually
+// starts them.
 // ============================================================
 import Quickshell
 import Quickshell.Io
@@ -30,21 +35,24 @@ Item {
     readonly property bool __earlyTrayHost: (SystemTray !== null)
 
     // --- Terminal (no tray dependency — start immediately) ------
+    // Guarded so a quickshell RELOAD doesn't relaunch kitty that's already up.
+    // `pgrep -f '[k]itty'` uses the bracket trick so the guard doesn't match its
+    // own `sh -c` command line. Launches only when no kitty is running.
     Process {
-        command: ["uwsm", "app", "--", "kitty"]
+        command: ["sh", "-c", "pgrep -f '[k]itty' >/dev/null 2>&1 || uwsm app -- kitty"]
         running: true
     }
 
     // --- Tray-dependent apps go here (after host registration) ---
     Process {
         id: keepassxcProc
-        command: ["uwsm", "app", "--", "keepassxc"]
+        command: ["sh", "-c", "pgrep -f '[k]eepassxc' >/dev/null 2>&1 || uwsm app -- keepassxc"]
         running: false
     }
 
     Process {
         id: mullvadProcess
-        command: ["uwsm", "app", "--", "mullvad-gui"]
+        command: ["sh", "-c", "pgrep -f '[m]ullvad-gui' >/dev/null 2>&1 || uwsm app -- mullvad-gui"]
         running: false
     }
 
