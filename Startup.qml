@@ -35,16 +35,22 @@ Item {
         running: true
     }
 
-    // --- Mullvad VPN (needs the tray icon) -----------------------
+    // --- Tray-dependent apps go here (after host registration) ---
+    Process {
+        id: keepassxcProc
+        command: ["uwsm", "app", "--", "keepassxc"]
+        running: false
+    }
+
     Process {
         id: mullvadProcess
         command: ["uwsm", "app", "--", "mullvad-gui"]
-        running: false // started in onCompleted, after the tray host
+        running: false
     }
 
-    // --- Tray-dependent apps go here (after host registration) ---
     Component.onCompleted: {
         const tray = SystemTray; // instantiates singleton -> registers host
-        mullvadProcess.running = true; // now safe to start tray app
+        keepassxcProc.running = true; // provides org.freedesktop.secrets for discordo
+        mullvadProcess.running = true; // tray app, safe after host registration
     }
 }
