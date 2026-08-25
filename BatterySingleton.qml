@@ -69,10 +69,13 @@ Singleton {
     }
 
     // Nerd Font icon based on state
+    // Order matters: charging (bolit) must be checked BEFORE pluggedIn, because
+    // pluggedIn is true while charging too — otherwise the plug would always win
+    // and the charging bolt would never show. Plug only appears when fully charged.
     readonly property string iconNerd: {
         if (percentage < 0) return ""
-        if (pluggedIn) return "\uf1e6"         // nf-fa-plug
-        if (charging) return "\uf0e7"          // nf-fa-bolt
+        if (charging) return "\uf0e7"          // nf-fa-bolt (lightning) — actively charging
+        if (pluggedIn) return "\uf1e6"      // nf-fa-plug — full / on AC, not charging
         if (percentage < 15) return "\uf244"   // nf-fa-battery_0
         if (percentage < 40) return "\uf243"   // nf-fa-battery_1
         if (percentage < 65) return "\uf242"   // nf-fa-battery_2
