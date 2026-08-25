@@ -20,6 +20,17 @@ Singleton {
     property int powerNow: 0
     property int energyFull: 0
 
+    // Power reading for the "P" bar widget (µV and µA -> watches)
+    property int currentNow: 0
+    property int voltageNow: 0
+
+    // True power draw/charge in watts; -1 when unavailable (e.g. battery full on AC).
+    readonly property real powerWatts: {
+        if (powerNow > 0) return powerNow / 1000000.0          // power_now is µW
+        if (voltageNow > 0 && currentNow > 0) return (voltageNow * currentNow) / 1e12  // µV x µA
+        return -1
+    }
+
     // Auto-detected battery device name
     property string batteryName: "BAT0"
 
@@ -73,22 +84,28 @@ Singleton {
             "STA=$(cat /sys/class/power_supply/$BAT/status 2>/dev/null || echo Unknown); " +
             "ENOW=$(cat /sys/class/power_supply/$BAT/energy_now 2>/dev/null || cat /sys/class/power_supply/$BAT/charge_now 2>/dev/null || echo 0); " +
             "ENOW=$((ENOW)); " +  // force integer
-            "PNOW=$(cat /sys/class/power_supply/$BAT/power_now 2>/dev/null || cat /sys/class/power_supply/$BAT/current_now 2>/dev/null || echo 0); " +
+            "PNOW=$(cat /sys/class/power_supply/$BAT/power_now 2>/dev/null || echo 0); " +
             "PNOW=$((PNOW)); " +
+            "INOW=$(cat /sys/class/power_supply/$BAT/current_now 2>/dev/null || echo 0); " +
+            "INOW=$((INOW)); " +
+            "VNOW=$(cat /sys/class/power_supply/$BAT/voltage_now 2>/dev/null || echo 0); " +
+            "VNOW=$((VNOW)); " +
             "EFULL=$(cat /sys/class/power_supply/$BAT/energy_full 2>/dev/null || cat /sys/class/power_supply/$BAT/charge_full 2>/dev/null || echo 0); " +
             "EFULL=$((EFULL)); " +
-            "echo \"$CAP|$STA|$ENOW|$PNOW|$EFULL\""]
+            "echo \"$CAP|$STA|$ENOW|$PNOW|$EFULL|$INOW|$VNOW\""]
         running: false  // triggered by detect or timer
 
         stdout: SplitParser {
             onRead: function(line) {
                 var parts = line.trim().split("|")
-                if (parts.length >= 5) {
+                if (parts.length >= 7) {
                     root.percentage = parseInt(parts[0]) || -1
                     root.status = parts[1] || "Unknown"
                     root.energyNow = parseInt(parts[2]) || 0
                     root.powerNow = parseInt(parts[3]) || 0
                     root.energyFull = parseInt(parts[4]) || 0
+                    root.currentNow = parseInt(parts[5]) || 0
+                    root.voltageNow = parseInt(parts[6]) || 0
                 }
             }
         }
@@ -108,7 +125,7 @@ Singleton {
 
     // Refresh periodically as a fallback (catches gradual charge changes)
     Timer {
-        interval: 30000
+        interval: 10000
         running: true
         repeat: true
         onTriggered: { readBattery.running = true }

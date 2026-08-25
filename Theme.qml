@@ -25,6 +25,7 @@ Singleton {
     property color secondary
     property color tertiary
     property color error
+    property color success
     property color outline
     property color outlineVar
     property color barBg
@@ -95,6 +96,7 @@ Singleton {
             secondary       = "#b5c9d7"
             tertiary        = "#c9c1ea"
             error           = "#ffb4ab"
+            success         = "#63d297"
             outline         = "#666666"
             outlineVar      = "#404040"
             barBg           = "#cc000000"
@@ -124,6 +126,7 @@ Singleton {
             secondary       = "#4a5d68"
             tertiary        = "#6b62a0"
             error           = "#ba1a1a"
+            success         = "#1f883d"
             outline         = "#8a9297"
             outlineVar      = "#c4c7c9"
             barBg           = "#ccffffff"
@@ -154,6 +157,7 @@ Singleton {
             secondary       = "#b5c9d7"
             tertiary        = "#c9c1ea"
             error           = "#ffb4ab"
+            success         = "#63d297"
             outline         = "#666666"
             outlineVar      = "#404040"
             barBg           = "#cc000000"

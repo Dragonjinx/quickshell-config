@@ -2,8 +2,12 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Resource usage widget — Disk, CPU, and Memory percentages.
-// Matches Waybar's hardware group format: D xx% / C xx% / M xx%
+// Resource usage widget — Power, CPU, and Memory.
+// Shows battery drain/charge power (P), CPU %, and Memory %.
+// Match Waybar's format: P xxW / C xx% / M xx%
+//  - On battery (Discharging): P = real drain in watts (white)
+//  - On AC while charging:     P = charge watts (green)
+//  - On AC when battery Full:  no current exists -> grey "--"
 // Click: opens btop.
 Item {
     id: root
@@ -11,11 +15,31 @@ Item {
 
     property int cpuUsage: 0
     property int memUsage: 0
-    property int diskUsage: 0
 
     // Previous CPU ticks for delta calculation
     property int prevIdle: 0
     property int prevTotal: 0
+
+    // Is there a real, readable power number right now?
+    readonly property bool powerAvailable: {
+        var s = BatterySingleton.status
+        return s === "Discharging" || s === "Charging"
+    }
+    // Green only when we're on AC and the battery is genuinely charging.
+    readonly property bool powerCharging: BatterySingleton.status === "Charging"
+
+    // Formatted power string; "--" in grey when docked/full (no current to read).
+    readonly property string powerText: {
+        var w = BatterySingleton.powerWatts
+        if (!powerAvailable || w < 0) return "\u2014"          // em dash
+        return w.toFixed(1) + "W"
+    }
+
+    // Power color: white/green/--; "--" uses a dim outline color.
+    readonly property color powerColor: {
+        if (powerCharging) return Theme.success
+        return powerText === "\u2014" ? Theme.outline : Theme.barText
+    }
 
     // --- CPU usage via /proc/stat ---
     Process {
@@ -64,21 +88,7 @@ Item {
         }
     }
 
-    // --- Disk usage via df ---
-    Process {
-        id: diskProc
-        command: ["sh", "-c", "df / | awk 'NR==2 {print $5}' | tr -d '%'"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: line => {
-                var val = parseInt(line.trim())
-                if (!isNaN(val)) root.diskUsage = val
-            }
-        }
-    }
-
-    // Refresh every 10 seconds
+    // CPU refresh every 10 seconds (battery handled by BatterySingleton's udev watch + timer).
     Timer {
         interval: 10000
         running: true
@@ -86,7 +96,6 @@ Item {
         onTriggered: {
             cpuProc.running = true
             memProc.running = true
-            diskProc.running = true
         }
     }
 
@@ -96,14 +105,14 @@ Item {
         spacing: Theme.spacing.sm
 
         Text {
-            text: "D"
+            text: "P"
             font.pixelSize: Theme.barFontSize
             color: Theme.outline
         }
         Text {
-            text: root.diskUsage + "%"
+            text: root.powerText
             font.pixelSize: Theme.barFontSize
-            color: root.diskUsage > 85 ? Theme.error : Theme.barText
+            color: root.powerColor
         }
 
         Text {
