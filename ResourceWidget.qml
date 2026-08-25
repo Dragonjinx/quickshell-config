@@ -21,17 +21,17 @@ Item {
     property int prevTotal: 0
 
     // Is there a real, readable power number right now?
-    readonly property bool powerAvailable: {
-        var s = BatterySingleton.status
-        return s === "Discharging" || s === "Charging"
-    }
+    // (UPower-backed BatterySingleton: powerAvailable when charging/discharging)
+    readonly property bool powerAvailable: BatterySingleton.powerAvailable
     // Green only when we're on AC and the battery is genuinely charging.
-    readonly property bool powerCharging: BatterySingleton.status === "Charging"
+    readonly property bool powerCharging: BatterySingleton.charging
 
     // Formatted power string; "--" in grey when docked/full (no current to read).
+    // BatterySingleton.powerWatts is signed: positive = charging, negative = draining.
     readonly property string powerText: {
-        var w = BatterySingleton.powerWatts
-        if (!powerAvailable || w < 0) return "\u2014"          // em dash
+        if (!powerAvailable) return "\u2014"          // em dash
+        var w = Math.abs(BatterySingleton.powerWatts)
+        if (w <= 0) return "\u2014"
         return w.toFixed(1) + "W"
     }
 
@@ -88,7 +88,8 @@ Item {
         }
     }
 
-    // CPU refresh every 10 seconds (battery handled by BatterySingleton's udev watch + timer).
+    // CPU refresh every 10 seconds (battery handled by the UPower service's
+    // change signals, not a timer).
     Timer {
         interval: 10000
         running: true
