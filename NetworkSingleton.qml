@@ -119,12 +119,11 @@ Singleton {
     }
 
     // ── Periodic refresh fallback ──────────────────────────
-    Timer {
-        interval: 10000
-        running: true
-        repeat: true
-        onTriggered: netCheckProc.running = true
-    }
+    // Removed: nmcli monitor (nmMonitor) already reacts to every NetworkManager
+    // DBus state change instantly (disconnect, connect, switch, wake). A periodic
+    // poll would be pure redundancy — the monitor owns responsiveness, and
+    // NetworkSingleton is now fully event-driven like the battery/UPower path.
+    // (If a reconnect ever goes unreflected here, restart quickshell.)
 
     // ── Device info string for tooltips (from Quickshell services) ──
     readonly property string deviceInfo: {
