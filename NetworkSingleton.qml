@@ -6,8 +6,13 @@ import Quickshell.Networking
 import QtQuick
 
 // Centralized network state — one instance shared across all bar instances.
-// Manages nmcli processes and state (connected, isWifi, signalPct, airplaneMode)
-// once, rather than duplicating them per display.
+//
+// Single source of truth: the NM-backed Quickshell.Networking service.
+// connected / isWifi / signalPct are all read straight off Networking.devices
+// and recomputed on real change signals. This replaces the old two-process
+// nmcli grep pipeline, whose wifi-check / eth-check processes raced and could
+// clobber a fresh "connected" with a stale "Offline" (notably when switching
+// networks — the whole reason this was rewritten).
 Singleton {
     id: root
 
@@ -16,57 +21,58 @@ Singleton {
     property int signalPct: 0
     property bool airplaneMode: false
 
-    // ── Wifi connection check ──────────────────────────────
-    Process {
-        id: netCheckProc
-        // grep -m1 prints only the first active wifi line, and (unlike a trailing
-        // `head -1`) still exits non-zero when nothing matches. A head -1 here
-        // always exits 0, which masked the disconnect and left the widget stuck
-        // on the last known signal instead of reporting Offline.
-        command: ["sh", "-c", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi list | grep -m1 '^yes'"]
-        running: true
+    // ── Recompute everything from Networking.devices ───────
+    // Idempotent; safe to call on any change signal or the nmcli monitor pulse.
+    // Signal stays non-granular: we just take the connected wifi network's
+    // strength rounded to a percentage, same as before.
+    function refresh() {
+        var any = false
+        var wifi = false
+        var sig = 0
 
-        stdout: SplitParser {
-            onRead: function(line) {
-                var parts = line.trim().split(":")
-                if (parts.length >= 3) {
-                    root.connected = true
-                    root.isWifi = true
-                    root.signalPct = parseInt(parts[2]) || 0
+        if (Networking && Networking.devices) {
+            var devs = Networking.devices.values
+            for (var i = 0; i < devs.length; i++) {
+                var dev = devs[i]
+                if (!dev || !dev.connected) continue
+
+                any = true
+
+                if (dev.type === 1) { // wifi device
+                    wifi = true
+                    if (dev.networks) {
+                        var nets = dev.networks.values
+                        for (var j = 0; j < nets.length; j++) {
+                            var n = nets[j]
+                            if (n.connected && n.signalStrength !== undefined) {
+                                sig = Math.round(n.signalStrength * 100)
+                                break
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        onExited: function(code, status) {
-            if (code !== 0) {
-                ethCheckProc.running = true
-            }
-        }
+        root.connected = any
+        root.isWifi = wifi
+        root.signalPct = sig
     }
 
-    // ── Ethernet connection check ──────────────────────────
-    Process {
-        id: ethCheckProc
-        // Same -m1 rationale as netCheckProc: preserves a non-zero exit code
-        // when no interface is connected, so the disconnect path runs.
-        command: ["sh", "-c", "nmcli -t -f DEVICE,TYPE,STATE device status | grep -m1 -E ':ethernet:connected$'"]
-        running: false
+    // ── React to real change signals on each device ────────
+    // Unlike the old hidden-Repeater + modelData approach (which only fired on
+    // object add/remove), these fire when an existing device's connection state
+    // changes — including a same-device AP switch that previously went unnoticed.
+    Repeater {
+        model: Networking.devices
 
-        stdout: SplitParser {
-            onRead: function(line) {
-                var parts = line.trim().split(":")
-                if (parts.length >= 3) {
-                    root.connected = true
-                    root.isWifi = false
-                }
-            }
-        }
+        delegate: Item {
+            required property var modelData
 
-        onExited: function(code, status) {
-            if (code !== 0) {
-                root.connected = false
-                root.isWifi = false
-                root.signalPct = 0
+            Connections {
+                target: modelData
+                function onConnectedChanged() { root.refresh() }
+                function onStateChanged()     { root.refresh() }
             }
         }
     }
@@ -84,22 +90,9 @@ Singleton {
         }
     }
 
-    // ── React to Quickshell Networking service changes ─────
-    Connections {
-        target: Networking
-
-        function onWifiEnabledChanged() {
-            rfkillCheck.running = true
-            netCheckProc.running = true
-        }
-
-        function onWifiHardwareEnabledChanged() {
-            rfkillCheck.running = true
-            netCheckProc.running = true
-        }
-    }
-
-    // ── NM state monitor (sleep/wake, reconnects) ──────────
+    // ── nmcli monitor = event pulse (kept, not a poll) ─────
+    // Guarantees a refresh on every NetworkManager DBus state change, so a real
+    // transition is never missed even if no QML signal fires for it.
     Process {
         id: nmMonitor
         command: ["nmcli", "monitor"]
@@ -107,7 +100,7 @@ Singleton {
 
         stdout: SplitParser {
             onRead: function(line) {
-                netCheckProc.running = true
+                root.refresh()
             }
         }
 
@@ -118,14 +111,25 @@ Singleton {
         }
     }
 
-    // ── Periodic refresh fallback ──────────────────────────
-    // Removed: nmcli monitor (nmMonitor) already reacts to every NetworkManager
-    // DBus state change instantly (disconnect, connect, switch, wake). A periodic
-    // poll would be pure redundancy — the monitor owns responsiveness, and
-    // NetworkSingleton is now fully event-driven like the battery/UPower path.
-    // (If a reconnect ever goes unreflected here, restart quickshell.)
+    // ── Recompute on wifi enable/hardware toggle ───────────
+    Connections {
+        target: Networking
 
-    // ── Device info string for tooltips (from Quickshell services) ──
+        function onWifiEnabledChanged() {
+            rfkillCheck.running = true
+            root.refresh()
+        }
+
+        function onWifiHardwareEnabledChanged() {
+            rfkillCheck.running = true
+            root.refresh()
+        }
+    }
+
+    // ── Initial consistency check on load ──────────────────
+    Component.onCompleted: root.refresh()
+
+    // ── Device info string for tooltips ────────────────────
     readonly property string deviceInfo: {
         if (!Networking || !Networking.devices) return "";
         var devs = Networking.devices.values;
