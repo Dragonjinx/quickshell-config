@@ -5,26 +5,47 @@ import Quickshell
 // Click: opens the Dashboard (calendar + notification history).
 Item {
     id: root
-    implicitWidth: displayText.contentWidth + 16
+    implicitWidth: timeRow.implicitWidth + 16
     required property var barWindow
     required property var barContent
     required property var dashRef  // reference to Dash popup
 
     readonly property string displayTime: TimeSingleton.time
 
+    // Accent-forward: clock digits in textBg (primary fg), the ':' separator
+    // in primary for a subtle accent pop.
+    function timePart(index) {
+        const parts = root.displayTime.split(":")
+        return parts[index] !== undefined ? parts[index] : ""
+    }
+
     // ── Time text ──
-    // Shows 24h time. Click opens Dashboard.
+    // Shows 24h time with a primary-colored ':' separator. Click opens Dashboard.
     Row {
+        id: timeRow
         anchors.centerIn: parent
-        spacing: 6
+        spacing: 1
 
         Text {
-            id: displayText
+            text: root.timePart(0)
             anchors.verticalCenter: parent.verticalCenter
-            text: root.displayTime
             font.pixelSize: Theme.barFontSize
             font.bold: true
-            color: Theme.barText
+            color: Theme.textBg
+        }
+        Text {
+            text: ":"
+            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: Theme.barFontSize
+            font.bold: true
+            color: Theme.primary
+        }
+        Text {
+            text: root.timePart(1)
+            anchors.verticalCenter: parent.verticalCenter
+            font.pixelSize: Theme.barFontSize
+            font.bold: true
+            color: Theme.textBg
         }
     }
 

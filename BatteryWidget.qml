@@ -10,6 +10,19 @@ Item {
 
     property bool showTime: false
 
+    // 5-level color gradient matching the 5 distinct battery icons.
+    // As charge drops: green -> yellow -> peach -> maroon -> red.
+    // (success=green, yellow, amber=peach, maroon, error=red).
+    readonly property color batteryColor: {
+        const p = BatterySingleton.percentage
+        if (BatterySingleton.charging) return Theme.success
+        if (p >= 90) return Theme.success       // battery_4
+        if (p >= 65) return Theme.yellow        // battery_3
+        if (p >= 40) return Theme.amber         // battery_2 (peach)
+        if (p >= 15) return Theme.maroon        // battery_1
+        return Theme.error                      // battery_0 (red)
+    }
+
     Row {
         id: contentRow
         anchors.centerIn: parent
@@ -20,14 +33,14 @@ Item {
             font.family: Theme.fontFam
             font.pixelSize: Theme.barFontSize
             text: BatterySingleton.iconNerd
-            color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
+            color: root.batteryColor
         }
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.showTime ? BatterySingleton.timeRemainingText : BatterySingleton.displayText
             font.pixelSize: Theme.barFontSize
-            color: BatterySingleton.percentage < 15 ? Theme.error : Theme.barText
+            color: root.batteryColor
         }
     }
 

@@ -4,44 +4,66 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Theme with presets: matugen (default), black, white, tokyonight, catppuccin,
-// tokyonightlight, catppuccinlatte. Switch via Theme.setMode("tokyonight") etc.
-// Dconf auto-switch maps dark -> catppuccin, light -> catppuccinlatte.
+// ============================================================================
+// Theme.qml — palette→role mapping for the quickshell bar.
+//
+// Two layers:
+//   1. SEMANTIC ROLES (below) — the ONLY colors widgets reference. This list
+//      is fixed and never changes when we add/edit a theme. Widgets only ever
+//      read these, so we never touch widget files to re-style.
+//   2. THEME PALETTES + MAPPING — each theme supplies its own named color set
+//      (e.g. catppuccin: rosewater/flamingo/mauve/...) and a small mapping
+//      function that assigns those palette colors to the semantic roles above.
+//
+// To add a theme you only write a palette object (its natural colors) and one
+// mapping function — nothing else.
+//
+// Modes: black, white, tokyonight, catppuccin (dark default), tokyonightlight,
+// catppuccinlatte. Dconf maps dark -> catppuccin, light -> catppuccinlatte.
+// ============================================================================
 Singleton {
     id: root
 
     // Current mode name. Dark default is catppuccin.
     property string mode: "catppuccin"
 
-    // Color properties (update when mode changes)
-    property color bg
-    property color surface
-    property color surfCont
-    property color surfBright
-    property color textBg
-    property color textSurf
-    property color primary
-    property color primCont
-    property color onPrim
-    property color secondary
-    property color tertiary
-    property color error
-    property color success
-    property color outline
-    property color outlineVar
-    property color barBg
-    property color barText
-    property color barHover
-    property color wsActive
-    property color wsActiveText
-    property color wsInactive
-    property color wsUrgent
-    property color launchBg
-    property color launchSurface
-    property color launchSel
-    property color launchText
-    property color launchTextSel
-    property color launchDim
+    // ────────────────────────────────────────────────────────────────────────
+    // 1. SEMANTIC ROLES — widgets reference these names only.
+    //    (Do not rename/reorder; widget files depend on them.)
+    // ────────────────────────────────────────────────────────────────────────
+    property color bg                // deepest background (e.g. crust)
+    property color surface           // main surface (e.g. base)
+    property color surfCont          // raised container tone
+    property color surfBright        // brightest surface hover
+    property color textBg            // primary foreground text
+    property color textSurf          // secondary / muted text
+    property color primary           // main accent (active ws, calendar today)
+    property color primCont          // accent container (occupied ws fill)
+    property color onPrim            // text/icon on top of primary
+    property color secondary         // secondary informational text
+    property color tertiary          // tertiary accent
+    property color error             // error / critical
+    property color success           // success / charging / healthy
+    property color amber             // warning tier (peach/amber)
+    property color blue              // bluetooth active accent
+    property color lavender          // wifi active accent
+    property color yellow            // battery mid-high
+    property color maroon            // battery low
+    property color outline           // borders / faint structure
+    property color outlineVar        // subtle borders
+    property color barBg             // bar background (opaque)
+    property color barText           // default bar text
+    property color barHover          // bar hover highlight
+    property color wsActive          // active workspace fill
+    property color wsActiveText      // text on active workspace
+    property color wsInactive        // empty workspace fill
+    property color wsUrgent          // urgent workspace fill
+    property color launchBg          // launcher backdrop
+    property color launchSurface     // launcher surface
+    property color launchSel         // launcher selection
+    property color launchText        // launcher text
+    property color launchTextSel     // launcher selected text
+    property color launchDim         // launcher muted text
 
     readonly property string fontFam: "BlexMono Nerd Font"
     readonly property int barFontSize: 15
@@ -83,222 +105,284 @@ Singleton {
         applyMode()
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    // 2. COLOR HELPERS
+    // ────────────────────────────────────────────────────────────────────────
+    function _alpha(c, a) {
+        return Qt.rgba(c.r, c.g, c.b, a)
+    }
+    // Linear blend: t=0 -> c1, t=1 -> c2
+    function _mix(c1, c2, t) {
+        return Qt.rgba(
+            c1.r * (1 - t) + c2.r * t,
+            c1.g * (1 - t) + c2.g * t,
+            c1.b * (1 - t) + c2.b * t,
+            1)
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // 3. THEME PALETTES — each theme's natural, named colors.
+    // ────────────────────────────────────────────────────────────────────────
+    readonly property QtObject catppuccinMocha: QtObject {
+        readonly property color rosewater: "#f5e0dc"
+        readonly property color flamingo:  "#f2cdcd"
+        readonly property color pink:      "#f5c2e7"
+        readonly property color mauve:     "#cba6f7"
+        readonly property color red:       "#f38ba8"
+        readonly property color maroon:    "#eba0ac"
+        readonly property color peach:     "#fab387"
+        readonly property color yellow:    "#f9e2af"
+        readonly property color green:     "#a6e3a1"
+        readonly property color teal:      "#94e2d5"
+        readonly property color sky:       "#89dceb"
+        readonly property color sapphire:  "#74c7ec"
+        readonly property color blue:      "#89b4fa"
+        readonly property color lavender:  "#b4befe"
+        readonly property color text:      "#cdd6f4"
+        readonly property color subtext1:  "#bac2de"
+        readonly property color subtext0:  "#a6adc8"
+        readonly property color overlay2:  "#9399b2"
+        readonly property color overlay1:  "#7f849c"
+        readonly property color overlay0:  "#6c7086"
+        readonly property color surface2:  "#585b70"
+        readonly property color surface1:  "#45475a"
+        readonly property color surface0:  "#313244"
+        readonly property color base:      "#1e1e2e"
+        readonly property color mantle:    "#181825"
+        readonly property color crust:     "#11111b"
+    }
+
+    readonly property QtObject catppuccinLatte: QtObject {
+        readonly property color rosewater: "#dc8a78"
+        readonly property color flamingo:  "#dd7878"
+        readonly property color pink:      "#ea76cb"
+        readonly property color mauve:     "#8839ef"
+        readonly property color red:       "#d20f39"
+        readonly property color maroon:    "#e64553"
+        readonly property color peach:     "#fe640b"
+        readonly property color yellow:    "#df8e1d"
+        readonly property color green:     "#40a02b"
+        readonly property color teal:      "#179299"
+        readonly property color sky:       "#04a5e5"
+        readonly property color sapphire:  "#209fb5"
+        readonly property color blue:      "#1e66f5"
+        readonly property color lavender:  "#7287fd"
+        readonly property color text:      "#4c4f69"
+        readonly property color subtext1:  "#5c5f77"
+        readonly property color subtext0:  "#6c6f85"
+        readonly property color overlay2:  "#7c7f93"
+        readonly property color overlay1:  "#8c8fa1"
+        readonly property color overlay0:  "#9ca0b0"
+        readonly property color surface2:  "#acb0be"
+        readonly property color surface1:  "#bcc0cc"
+        readonly property color surface0:  "#ccd0da"
+        readonly property color base:      "#eff1f5"
+        readonly property color mantle:    "#e6e9ef"
+        readonly property color crust:     "#dce0e8"
+    }
+
+    readonly property QtObject tokyoNight: QtObject {
+        readonly property color bg:            "#1a1b26"
+        readonly property color bg_dark:       "#16161e"
+        readonly property color bg_highlight:  "#292e42"
+        readonly property color bg_visual:     "#283457"
+        readonly property color fg:            "#c0caf5"
+        readonly property color fg_dark:       "#a9b1d6"
+        readonly property color comment:       "#565f89"
+        readonly property color blue:          "#7aa2f7"
+        readonly property color blue0:         "#3d59a1"
+        readonly property color cyan:          "#7dcfff"
+        readonly property color teal:          "#73daca"
+        readonly property color green:         "#9ece6a"
+        readonly property color yellow:        "#e0af68"
+        readonly property color orange:        "#ff9e64"
+        readonly property color red:           "#f7768e"
+        readonly property color magenta:       "#bb9af7"
+        readonly property color purple:        "#9d7cd8"
+        // derived soft periwinkle for the lavender wifi accent
+        readonly property color lavender:      "#b8a6f0"
+    }
+
+    readonly property QtObject tokyoDay: QtObject {
+        readonly property color bg:            "#e1e2e7"
+        readonly property color bg_dark:       "#d0d5e3"
+        readonly property color bg_highlight:  "#c4c8da"
+        readonly property color bg_visual:     "#b7c1e3"
+        readonly property color fg:            "#3760bf"
+        readonly property color fg_dark:       "#6172b0"
+        readonly property color comment:       "#848cb5"
+        readonly property color blue:          "#2e7de9"
+        readonly property color blue0:         "#7890dd"
+        readonly property color cyan:          "#007197"
+        readonly property color teal:          "#118c74"
+        readonly property color green:         "#587539"
+        readonly property color yellow:        "#8c6c3e"
+        readonly property color orange:        "#b15c00"
+        readonly property color red:           "#f52a65"
+        readonly property color magenta:       "#9854f1"
+        readonly property color purple:        "#7847bd"
+        readonly property color lavender:      "#6f80f5"
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    // 4. MAPPINGS — palette → semantic roles. ONLY per-theme code we maintain.
+    // ────────────────────────────────────────────────────────────────────────
+
+    // Catppuccin (shared by mocha + latte)
+    function _applyCatppuccin(p) {
+        bg           = p.crust
+        surface      = p.base
+        surfCont     = p.surface0
+        surfBright   = p.surface1
+        textBg       = p.text
+        textSurf     = p.subtext0
+        primary      = p.mauve
+        primCont     = root._mix(p.base, p.mauve, 0.30)
+        onPrim       = p.base
+        secondary    = p.subtext0
+        tertiary     = p.lavender
+        error        = p.red
+        success      = p.green
+        amber        = p.peach
+        blue         = p.blue
+        lavender     = p.lavender
+        yellow       = p.yellow
+        maroon       = p.maroon
+        outline      = p.overlay0
+        outlineVar   = p.surface1
+        barBg        = p.base
+        barText      = p.text
+        barHover     = p.surface0
+        wsActive     = p.mauve
+        wsActiveText = p.base
+        wsInactive   = p.surface1
+        wsUrgent     = p.red
+        launchBg     = root._alpha(p.base, 0.72)
+        launchSurface= p.base
+        launchSel    = p.mauve
+        launchText   = p.text
+        launchTextSel= p.base
+        launchDim    = p.subtext0
+    }
+
+    // Tokyo Night / Day
+    function _applyTokyo(p) {
+        bg           = p.bg_dark
+        surface      = p.bg
+        surfCont     = p.bg_highlight
+        surfBright   = root._mix(p.bg_dark, p.fg, 0.18)
+        textBg       = p.fg
+        textSurf     = p.fg_dark
+        primary      = p.blue
+        primCont     = root._mix(p.bg_dark, p.blue, 0.35)
+        onPrim       = p.bg_dark
+        secondary    = p.fg_dark
+        tertiary     = p.magenta
+        error        = p.red
+        success      = p.green
+        amber        = p.orange
+        blue         = p.blue
+        lavender     = p.lavender
+        yellow       = p.yellow
+        maroon       = root._mix(p.red, p.bg_dark, 0.45)
+        outline      = p.comment
+        outlineVar   = p.bg_highlight
+        barBg        = p.bg_dark
+        barText      = p.fg
+        barHover     = p.bg_highlight
+        wsActive     = p.blue
+        wsActiveText = p.bg_dark
+        wsInactive   = p.bg_highlight
+        wsUrgent     = p.red
+        launchBg     = root._alpha(p.bg_dark, 0.72)
+        launchSurface= p.bg
+        launchSel    = p.blue
+        launchText   = p.fg
+        launchTextSel= p.bg_dark
+        launchDim    = p.comment
+    }
+
+    // Monochrome black (also matugen default)
+    function _applyMonoDark() {
+        bg           = "#000000"
+        surface      = "#1a1a1a"
+        surfCont     = "#262626"
+        surfBright   = "#333333"
+        textBg       = "#ffffff"
+        textSurf     = "#ffffff"
+        primary      = "#8ecff2"
+        primCont     = "#004d67"
+        onPrim       = "#000000"
+        secondary    = "#b5c9d7"
+        tertiary     = "#c9c1ea"
+        error        = "#ffb4ab"
+        success      = "#63d297"
+        amber        = "#f0b429"
+        blue         = "#8ecff2"
+        lavender     = "#c0caf5"
+        yellow       = "#e3c200"
+        maroon       = "#d5697c"
+        outline      = "#666666"
+        outlineVar   = "#404040"
+        barBg        = "#cc000000"   // keep original translucent
+        barText      = "#ffffff"
+        barHover     = "#333333"
+        wsActive     = "#ffffff"
+        wsActiveText = "#000000"
+        wsInactive   = "#333333"
+        wsUrgent     = "#ffb4ab"
+        launchBg     = "#f0000000"
+        launchSurface= "#1a1a1a"
+        launchSel    = "#ffffff"
+        launchText   = "#ffffff"
+        launchTextSel= "#000000"
+        launchDim    = "#666666"
+    }
+
+    // Monochrome white
+    function _applyMonoLight() {
+        bg           = "#ffffff"
+        surface      = "#f5f5f5"
+        surfCont     = "#ebebeb"
+        surfBright   = "#e0e0e0"
+        textBg       = "#000000"
+        textSurf     = "#000000"
+        primary      = "#006494"
+        primCont     = "#c2e8ff"
+        onPrim       = "#ffffff"
+        secondary    = "#4a5d68"
+        tertiary     = "#6b62a0"
+        error        = "#ba1a1a"
+        success      = "#1f883d"
+        amber        = "#9a6a00"
+        blue         = "#006494"
+        lavender     = "#6b62a0"
+        yellow       = "#9a6a00"
+        maroon       = "#a4425c"
+        outline      = "#8a9297"
+        outlineVar   = "#c4c7c9"
+        barBg        = "#ccffffff"   // keep original translucent
+        barText      = "#000000"
+        barHover     = "#e0e0e0"
+        wsActive     = "#ffffff"
+        wsActiveText = "#000000"
+        wsInactive   = "#c4c7c9"
+        wsUrgent     = "#ba1a1a"
+        launchBg     = "#f0ffffff"
+        launchSurface= "#f5f5f5"
+        launchSel    = "#333333"
+        launchText   = "#000000"
+        launchTextSel= "#ffffff"
+        launchDim    = "#8a9297"
+    }
+
     function applyMode() {
-        if (root.mode === "black") {
-            bg              = "#000000"
-            surface         = "#1a1a1a"
-            surfCont        = "#262626"
-            surfBright      = "#333333"
-            textBg          = "#ffffff"
-            textSurf        = "#ffffff"
-            primary         = "#8ecff2"
-            primCont        = "#004d67"
-            onPrim          = "#000000"
-            secondary       = "#b5c9d7"
-            tertiary        = "#c9c1ea"
-            error           = "#ffb4ab"
-            success         = "#63d297"
-            outline         = "#666666"
-            outlineVar      = "#404040"
-            barBg           = "#cc000000"
-            barText         = "#ffffff"
-            barHover        = "#333333"
-            wsActive        = "#ffffff"
-            wsActiveText    = "#000000"
-            wsInactive      = "#333333"
-            wsUrgent        = "#ffb4ab"
-            launchBg        = "#f0000000"
-            launchSurface   = "#1a1a1a"
-            launchSel       = "#ffffff"
-            launchText      = "#ffffff"
-            launchTextSel   = "#000000"
-            launchDim       = "#666666"
-
-        } else if (root.mode === "white") {
-            bg              = "#ffffff"
-            surface         = "#f5f5f5"
-            surfCont        = "#ebebeb"
-            surfBright      = "#e0e0e0"
-            textBg          = "#000000"
-            textSurf        = "#000000"
-            primary         = "#006494"
-            primCont        = "#c2e8ff"
-            onPrim          = "#ffffff"
-            secondary       = "#4a5d68"
-            tertiary        = "#6b62a0"
-            error           = "#ba1a1a"
-            success         = "#1f883d"
-            outline         = "#8a9297"
-            outlineVar      = "#c4c7c9"
-            barBg           = "#ccffffff"
-            barText         = "#000000"
-            barHover        = "#e0e0e0"
-            wsActive        = "#ffffff"
-            wsActiveText    = "#000000"
-            wsInactive      = "#c4c7c9"
-            wsUrgent        = "#ba1a1a"
-            launchBg        = "#f0ffffff"
-            launchSurface   = "#f5f5f5"
-            launchSel       = "#333333"
-            launchText      = "#000000"
-            launchTextSel   = "#ffffff"
-            launchDim       = "#8a9297"
-
-        } else if (root.mode === "tokyonight") {
-            // Tokyo Night (night) — https://github.com/tokyo-night
-            bg              = "#16161e"
-            surface         = "#1a1b26"
-            surfCont        = "#292e42"
-            surfBright      = "#3b4261"
-            textBg          = "#c0caf5"
-            textSurf        = "#a9b1d6"
-            primary         = "#7aa2f7"
-            primCont        = "#3d59a1"
-            onPrim          = "#16161e"
-            secondary       = "#a9b1d6"
-            tertiary        = "#bb9af7"
-            error           = "#f7768e"
-            success         = "#9ece6a"
-            outline         = "#565f89"
-            outlineVar      = "#3b4261"
-            barBg           = "#16161e"
-            barText         = "#c0caf5"
-            barHover        = "#3b4261"
-            wsActive        = "#7aa2f7"
-            wsActiveText    = "#16161e"
-            wsInactive      = "#3b4261"
-            wsUrgent        = "#f7768e"
-            launchBg        = "#c016161e"
-            launchSurface   = "#1a1b26"
-            launchSel       = "#7aa2f7"
-            launchText      = "#c0caf5"
-            launchTextSel   = "#16161e"
-            launchDim       = "#565f89"
-
-        } else if (root.mode === "catppuccin") {
-            // Catppuccin mocha — https://github.com/catppuccin
-            bg              = "#11111b"
-            surface         = "#1e1e2e"
-            surfCont        = "#313244"
-            surfBright      = "#45475a"
-            textBg          = "#cdd6f4"
-            textSurf        = "#cdd6f4"
-            primary         = "#89b4fa"
-            primCont        = "#458588"
-            onPrim          = "#1e1e2e"
-            secondary       = "#a6adc8"
-            tertiary        = "#b4befe"
-            error           = "#f38ba8"
-            success         = "#a6e3a1"
-            outline         = "#6c7086"
-            outlineVar      = "#45475a"
-            barBg           = "#1e1e2e"
-            barText         = "#cdd6f4"
-            barHover        = "#313244"
-            wsActive        = "#b4befe"
-            wsActiveText    = "#1e1e2e"
-            wsInactive      = "#45475a"
-            wsUrgent        = "#f38ba8"
-            launchBg        = "#c01e1e2e"
-            launchSurface   = "#1e1e2e"
-            launchSel       = "#b4befe"
-            launchText      = "#cdd6f4"
-            launchTextSel   = "#1e1e2e"
-            launchDim       = "#a6adc8"
-
-        } else if (root.mode === "tokyonightlight") {
-            // Tokyo Night day (light) — https://github.com/tokyo-night
-            bg              = "#d0d5e3"
-            surface         = "#e1e2e7"
-            surfCont        = "#c4c8da"
-            surfBright      = "#ffffff"
-            textBg          = "#3760bf"
-            textSurf        = "#6172b0"
-            primary         = "#2e7de9"
-            primCont        = "#b7c1e3"
-            onPrim          = "#ffffff"
-            secondary       = "#6172b0"
-            tertiary        = "#9854f1"
-            error           = "#f52a65"
-            success         = "#587539"
-            outline         = "#848cb5"
-            outlineVar      = "#b4b5b9"
-            barBg           = "#d0d5e3"
-            barText         = "#3760bf"
-            barHover        = "#b7c1e3"
-            wsActive        = "#2e7de9"
-            wsActiveText    = "#ffffff"
-            wsInactive      = "#a8aecb"
-            wsUrgent        = "#f52a65"
-            launchBg        = "#e0d0d5e3"
-            launchSurface   = "#e1e2e7"
-            launchSel       = "#2e7de9"
-            launchText      = "#3760bf"
-            launchTextSel   = "#ffffff"
-            launchDim       = "#848cb5"
-
-        } else if (root.mode === "catppuccinlatte") {
-            // Catppuccin latte (light) — https://github.com/catppuccin
-            bg              = "#dce0e8"
-            surface         = "#eff1f5"
-            surfCont        = "#ccd0da"
-            surfBright      = "#ffffff"
-            textBg          = "#4c4f69"
-            textSurf        = "#4c4f69"
-            primary         = "#1e66f5"
-            primCont        = "#ccd0da"
-            onPrim          = "#ffffff"
-            secondary       = "#5c5f77"
-            tertiary        = "#7287fd"
-            error           = "#d20f39"
-            success         = "#40a02b"
-            outline         = "#7c7f93"
-            outlineVar      = "#bcc0cc"
-            barBg           = "#dce0e8"
-            barText         = "#4c4f69"
-            barHover        = "#ccd0da"
-            wsActive        = "#7287fd"
-            wsActiveText    = "#ffffff"
-            wsInactive      = "#bcc0cc"
-            wsUrgent        = "#d20f39"
-            launchBg        = "#e0eff1f5"
-            launchSurface   = "#eff1f5"
-            launchSel       = "#1e66f5"
-            launchText      = "#4c4f69"
-            launchTextSel   = "#ffffff"
-            launchDim       = "#7c7f93"
-
-        } else {
-            // default: dark mode (same as black)
-            bg              = "#000000"
-            surface         = "#1a1a1a"
-            surfCont        = "#262626"
-            surfBright      = "#333333"
-            textBg          = "#ffffff"
-            textSurf        = "#ffffff"
-            primary         = "#8ecff2"
-            primCont        = "#004d67"
-            onPrim          = "#000000"
-            secondary       = "#b5c9d7"
-            tertiary        = "#c9c1ea"
-            error           = "#ffb4ab"
-            success         = "#63d297"
-            outline         = "#666666"
-            outlineVar      = "#404040"
-            barBg           = "#cc000000"
-            barText         = "#ffffff"
-            barHover        = "#333333"
-            wsActive        = "#ffffff"
-            wsActiveText    = "#000000"
-            wsInactive      = "#333333"
-            wsUrgent        = "#ffb4ab"
-            launchBg        = "#f0000000"
-            launchSurface   = "#1a1a1a"
-            launchSel       = "#ffffff"
-            launchText      = "#ffffff"
-            launchTextSel   = "#000000"
-            launchDim       = "#666666"
-        }
+        if (root.mode === "catppuccin")             root._applyCatppuccin(root.catppuccinMocha)
+        else if (root.mode === "catppuccinlatte")   root._applyCatppuccin(root.catppuccinLatte)
+        else if (root.mode === "tokyonight")        root._applyTokyo(root.tokyoNight)
+        else if (root.mode === "tokyonightlight")   root._applyTokyo(root.tokyoDay)
+        else if (root.mode === "white")             root._applyMonoLight()
+        else                                        root._applyMonoDark()  // black + matugen default
     }
 
     Component.onCompleted: applyMode()
@@ -337,8 +421,6 @@ Singleton {
 
     // Persistent process to tell every running kitty instance to re-apply its
     // auto theme (*-theme.auto.conf) for the current system color scheme.
-    // kitty's native portal trigger is unreliable on NixOS+Hyprland (#8811),
-    // so we supply the reload trigger ourselves via remote control.
     Process {
         id: kittyThemeSwitcher
         running: false
@@ -356,8 +438,6 @@ Singleton {
         root.setMode(newMode)
 
         // listen_on unix:/tmp/kitty-rc -> /tmp/kitty-rc-<pid> per instance.
-        // simulate_color_scheme_preference_change forces kitty to re-pick its
-        // dark/light-theme.auto.conf and applies it to ALL windows (patch_colors).
         kittyThemeSwitcher.command = ["sh", "-c",
             "for s in /tmp/kitty-rc-*; do [ -S \"$s\" ] || continue; " +
             "$HOME/.nix-profile/bin/kitten @ --to \"unix:$s\" action " +

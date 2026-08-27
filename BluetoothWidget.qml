@@ -165,7 +165,7 @@ Item {
         font.family: Theme.fontFam
         font.pixelSize: Theme.mdiFontSize
         text: root.iconNerd
-        color: root.enabled ? Theme.primary : Theme.textSurf
+        color: root.enabled ? Theme.blue : Theme.textSurf
         opacity: root.enabled ? 1.0 : 0.5
     }
 

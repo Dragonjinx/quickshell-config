@@ -21,6 +21,20 @@ Row {
 
     readonly property var activeWs: Hyprland.focusedWorkspace
 
+    // Workspaces that currently have at least one open window.
+    // Accent-forward: occupied-but-inactive workspaces get a primary-tint
+    // (container) fill instead of the flat inactive color.
+    readonly property var occupied: {
+        const occ = {}
+        const values = Hyprland.toplevels ? Hyprland.toplevels.values : []
+        for (let i = 0; i < values.length; ++i) {
+            const t = values[i]
+            const wid = t && t.workspace ? t.workspace.id : -1
+            if (wid > 0) occ[wid] = true
+        }
+        return occ
+    }
+
     // Fixed workspaces 1-5
     Repeater {
         model: [1, 2, 3, 4, 5]
@@ -32,6 +46,7 @@ Row {
             readonly property var ws: root.wsMap[modelData]
             readonly property bool isActive: root.activeWs ? root.activeWs.id === modelData : false
             readonly property bool isUrgent: ws ? ws.urgent : false
+            readonly property bool isOccupied: !!root.occupied[modelData]
             property bool hovered: false
             property int extraPad: 0
 
@@ -41,12 +56,13 @@ Row {
             color: {
                 if (isUrgent) return Theme.wsUrgent
                 if (isActive) return Theme.wsActive
+                if (isOccupied) return Theme.primCont
                 return Theme.wsInactive
             }
             opacity: {
                 if (isActive) return 1.0
-                if (hovered) return 0.7
-                return 0.5
+                if (hovered) return 0.85
+                return isOccupied ? 0.7 : 0.5
             }
 
             Behavior on opacity { Anim { type: Anim.FastEffects } }
@@ -71,7 +87,7 @@ Row {
                 id: txt
                 anchors.centerIn: parent
                 text: modelData
-                color: isActive ? Theme.wsActiveText : Theme.textSurf
+                color: isActive ? Theme.wsActiveText : (isOccupied ? Theme.barText : Theme.textSurf)
                 font.pixelSize: Theme.barFontSize
                 font.bold: isActive
             }

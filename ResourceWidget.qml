@@ -35,10 +35,10 @@ Item {
         return w.toFixed(1) + "W"
     }
 
-    // Power color: white/green/--; "--" uses a dim outline color.
+    // Power color: green when charging, dim outline for "--", secondary otherwise.
     readonly property color powerColor: {
         if (powerCharging) return Theme.success
-        return powerText === "\u2014" ? Theme.outline : Theme.barText
+        return powerText === "\u2014" ? Theme.outline : Theme.secondary
     }
 
     // --- CPU usage via /proc/stat ---
@@ -130,7 +130,7 @@ Item {
         Text {
             text: root.cpuUsage + "%"
             font.pixelSize: Theme.barFontSize
-            color: root.cpuUsage > 80 ? Theme.error : Theme.barText
+            color: root.cpuUsage > 85 ? Theme.error : root.cpuUsage > 70 ? Theme.amber : Theme.secondary
         }
 
         Text {
@@ -147,7 +147,7 @@ Item {
         Text {
             text: root.memUsage + "%"
             font.pixelSize: Theme.barFontSize
-            color: root.memUsage > 80 ? Theme.error : Theme.barText
+            color: root.memUsage > 85 ? Theme.error : root.memUsage > 70 ? Theme.amber : Theme.secondary
         }
     }
 

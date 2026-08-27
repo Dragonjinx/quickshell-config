@@ -19,7 +19,7 @@ Item {
             font.family: Theme.fontFam
             font.pixelSize: Theme.mdiFontSize
             text: VolumeSingleton.sinkIcon
-            color: VolumeSingleton.muted ? Theme.error : Theme.barText
+            color: VolumeSingleton.muted ? Theme.error : Theme.secondary
         }
 
         // Volume percentage (hidden when muted)
@@ -27,7 +27,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: VolumeSingleton.volumePercent
             font.pixelSize: Theme.barFontSize
-            color: Theme.barText
+            color: VolumeSingleton.muted ? Theme.error : Theme.secondary
             visible: !VolumeSingleton.muted
         }
 
@@ -36,7 +36,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             font.family: Theme.fontFam
             text: VolumeSingleton.micIcon
-            color: VolumeSingleton.micMuted ? Theme.error : Theme.barText
+            color: VolumeSingleton.micMuted ? Theme.error : Theme.secondary
             font.pixelSize: Theme.mdiFontSize
         }
     }

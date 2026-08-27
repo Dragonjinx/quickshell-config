@@ -18,7 +18,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 6
-        color: ma.containsMouse ? Theme.surfaceContainerHigh : "transparent"
+        color: ma.containsMouse ? Theme.surfBright : "transparent"
 
         Column {
             anchors.centerIn: parent

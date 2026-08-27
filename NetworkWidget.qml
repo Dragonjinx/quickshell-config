@@ -34,6 +34,14 @@ Item {
         return "󰈀"                       // md-ethernet
     }
 
+    // Accent-forward status color: offline = error, weak wifi = amber,
+    // connected = lavender (wifi accent).
+    readonly property color statusColor: {
+        if (!NetworkSingleton.connected) return Theme.error
+        if (NetworkSingleton.isWifi && NetworkSingleton.signalPct < 33) return Theme.amber
+        return Theme.lavender
+    }
+
     // ── Tooltip popup ──────────────────────────────────────
     property bool hovered: false
 
@@ -97,7 +105,7 @@ Item {
             font.family: Theme.fontFam
             font.pixelSize: Theme.mdiFontSize
             text: root.iconNerd
-            color: NetworkSingleton.connected ? Theme.barText : Theme.textSurf
+            color: root.statusColor
         }
 
         Text {
@@ -108,7 +116,7 @@ Item {
                 return "Wired"
             }
             font.pixelSize: Theme.barFontSize
-            color: NetworkSingleton.connected ? Theme.barText : Theme.textSurf
+            color: root.statusColor
         }
     }
 
