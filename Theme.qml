@@ -18,14 +18,14 @@ import QtQuick
 // To add a theme you only write a palette object (its natural colors) and one
 // mapping function — nothing else.
 //
-// Modes: black, white, tokyonight, catppuccin (dark default), tokyonightlight,
-// catppuccinlatte. Dconf maps dark -> catppuccin, light -> catppuccinlatte.
+// Modes: black, white, tokyo_night, catppuccin_mocha (dark default), tokyo_night_light,
+// catppuccin_latte. Dconf maps dark -> catppuccin_mocha, light -> catppuccin_latte.
 // ============================================================================
 Singleton {
     id: root
 
     // Current mode name. Dark default is catppuccin.
-    property string mode: "catppuccin"
+    property string mode: "catppuccin_mocha"
 
     // ────────────────────────────────────────────────────────────────────────
     // 1. SEMANTIC ROLES — widgets reference these names only.
@@ -377,10 +377,10 @@ Singleton {
     }
 
     function applyMode() {
-        if (root.mode === "catppuccin")             root._applyCatppuccin(root.catppuccinMocha)
-        else if (root.mode === "catppuccinlatte")   root._applyCatppuccin(root.catppuccinLatte)
-        else if (root.mode === "tokyonight")        root._applyTokyo(root.tokyoNight)
-        else if (root.mode === "tokyonightlight")   root._applyTokyo(root.tokyoDay)
+        if (root.mode === "catppuccin_mocha")         root._applyCatppuccin(root.catppuccinMocha)
+        else if (root.mode === "catppuccin_latte")    root._applyCatppuccin(root.catppuccinLatte)
+        else if (root.mode === "tokyo_night")         root._applyTokyo(root.tokyoNight)
+        else if (root.mode === "tokyo_night_light")   root._applyTokyo(root.tokyoDay)
         else if (root.mode === "white")             root._applyMonoLight()
         else                                        root._applyMonoDark()  // black + matugen default
     }
@@ -429,10 +429,10 @@ Singleton {
     function applyDconfValue(val) {
         val = val.trim().replace(/'/g, "")
         // dark scheme -> catppuccin (dark default); light -> catppuccinlatte
-        var newMode = "catppuccin"
+        var newMode = "catppuccin_mocha"
         var scheme = "dark"
         if (val === "prefer-light") {
-            newMode = "catppuccinlatte"
+            newMode = "catppuccin_latte"
             scheme = "light"
         }
         root.setMode(newMode)
