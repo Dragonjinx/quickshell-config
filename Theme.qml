@@ -28,7 +28,7 @@ Singleton {
     id: root
 
     // Current theme FAMILY. Dark/light is selected by `light` (from dconf).
-    property string mode: "catppuccin"
+    property string mode: "tokyo"
 
     // Light or dark variant of the active family (driven by dconf scheme).
     property bool light: false
@@ -55,6 +55,11 @@ Singleton {
     property color lavender          // wifi active accent
     property color yellow            // battery mid-high
     property color maroon            // battery low
+    property color batFull           // battery icon tier 4 (highest)
+    property color batHigh           // battery icon tier 3
+    property color batMid            // battery icon tier 2
+    property color batLow            // battery icon tier 1
+    property color batCrit           // battery icon tier 0 (critical)
     property color outline           // borders / faint structure
     property color outlineVar        // subtle borders
     property color barBg             // bar background (opaque)
@@ -259,6 +264,12 @@ Singleton {
         lavender     = p.lavender
         yellow       = p.yellow
         maroon       = p.maroon
+        // battery gradient: green > yellow > peach > maroon > red
+        batFull      = p.green
+        batHigh      = p.yellow
+        batMid       = p.peach
+        batLow       = p.maroon
+        batCrit      = p.red
         outline      = p.overlay0
         outlineVar   = p.surface1
         barBg        = p.base
@@ -296,6 +307,12 @@ Singleton {
         lavender     = p.lavender
         yellow       = p.yellow
         maroon       = root._mix(p.red, p.bg_dark, 0.45)
+        // battery gradient: teal > green > yellow > orange > red
+        batFull      = p.teal
+        batHigh      = p.green
+        batMid       = p.yellow
+        batLow       = p.orange
+        batCrit      = p.red
         outline      = p.comment
         outlineVar   = p.bg_highlight
         barBg        = p.bg_dark

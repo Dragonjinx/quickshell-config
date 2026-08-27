@@ -16,11 +16,11 @@ Item {
     readonly property color batteryColor: {
         const p = BatterySingleton.percentage
         if (BatterySingleton.charging) return Theme.success
-        if (p >= 90) return Theme.success       // battery_4
-        if (p >= 65) return Theme.yellow        // battery_3
-        if (p >= 40) return Theme.amber         // battery_2 (peach)
-        if (p >= 15) return Theme.maroon        // battery_1
-        return Theme.error                      // battery_0 (red)
+        if (p >= 90) return Theme.batFull      // battery_4
+        if (p >= 65) return Theme.batHigh      // battery_3
+        if (p >= 40) return Theme.batMid       // battery_2
+        if (p >= 15) return Theme.batLow       // battery_1
+        return Theme.batCrit                   // battery_0 (critical)
     }
 
     Row {
