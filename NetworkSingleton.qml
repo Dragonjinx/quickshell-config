@@ -129,6 +129,31 @@ Singleton {
     // ── Initial consistency check on load ──────────────────
     Component.onCompleted: root.refresh()
 
+    // ── Startup probe: logins start ALREADY connected ──────
+    // On logout/login (and some boots) NetworkManager is already connected when
+    // quickshell starts, so there are NO change signals and NO nmcli monitor
+    // events to trigger a refresh — and the one Component.onCompleted refresh()
+    // may run before Networking.devices is populated, leaving us stuck Offline.
+    // Re-probe briefly at boot until the model reflects reality, then stop. This
+    // is startup-only, so it can't reintroduce the old wifi/eth stale race.
+    Timer {
+        id: startupProbe
+        interval: 250
+        repeat: true
+        running: true
+        property int tries: 0
+
+        onTriggered: {
+            tries++
+            root.refresh()
+            var populated = Networking && Networking.devices
+                && Networking.devices.values.length > 0
+            // Stop once the model is populated (data is then event-driven),
+            // or after a hard cap so a genuinely-offline login still settles.
+            if (populated || tries >= 12) running = false
+        }
+    }
+
     // ── Device info string for tooltips ────────────────────
     readonly property string deviceInfo: {
         if (!Networking || !Networking.devices) return "";
