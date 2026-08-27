@@ -18,14 +18,20 @@ import QtQuick
 // To add a theme you only write a palette object (its natural colors) and one
 // mapping function — nothing else.
 //
-// Modes: tokyo_night, catppuccin_mocha (dark default), tokyo_night_light,
-// catppuccin_latte. Dconf maps dark -> catppuccin_mocha, light -> catppuccin_latte.
+// Families (modes): `catppuccin` and `tokyo`. Each family has a dark and a
+// light palette — selected by the `light` flag (driven by dconf scheme):
+//   catppuccin: dark=mocha, light=latte
+//   tokyo:      dark=tokyo night, light=tokyo night light
+// Pick a family via setMode("catppuccin"|"tokyo"); dconf chooses light/dark.
 // ============================================================================
 Singleton {
     id: root
 
-    // Current mode name. Dark default is catppuccin.
-    property string mode: "catppuccin_mocha"
+    // Current theme FAMILY. Dark/light is selected by `light` (from dconf).
+    property string mode: "catppuccin"
+
+    // Light or dark variant of the active family (driven by dconf scheme).
+    property bool light: false
 
     // ────────────────────────────────────────────────────────────────────────
     // 1. SEMANTIC ROLES — widgets reference these names only.
@@ -102,6 +108,11 @@ Singleton {
 
     function setMode(newMode) {
         root.mode = newMode
+        applyMode()
+    }
+
+    function setLight(isLight) {
+        root.light = isLight
         applyMode()
     }
 
@@ -305,11 +316,18 @@ Singleton {
     // Only catppuccin + tokyo themes remain (mono black/white removed).
 
     function applyMode() {
-        if (root.mode === "catppuccin_mocha")         root._applyCatppuccin(root.catppuccinMocha)
-        else if (root.mode === "catppuccin_latte")    root._applyCatppuccin(root.catppuccinLatte)
-        else if (root.mode === "tokyo_night")         root._applyTokyo(root.tokyoNight)
-        else if (root.mode === "tokyo_night_light")   root._applyTokyo(root.tokyoDay)
-        else                                           root._applyCatppuccin(root.catppuccinMocha) // fallback
+        if (root.mode === "catppuccin") {
+            if (root.light) root._applyCatppuccin(root.catppuccinLatte)
+            else            root._applyCatppuccin(root.catppuccinMocha)
+
+        } else if (root.mode === "tokyo") {
+            if (root.light) root._applyTokyo(root.tokyoDay)
+            else            root._applyTokyo(root.tokyoNight)
+
+        } else {
+            // unknown family -> fall back to catppuccin dark
+            root._applyCatppuccin(root.catppuccinMocha)
+        }
     }
 
     Component.onCompleted: applyMode()
@@ -355,14 +373,13 @@ Singleton {
 
     function applyDconfValue(val) {
         val = val.trim().replace(/'/g, "")
-        // dark scheme -> catppuccin (dark default); light -> catppuccinlatte
-        var newMode = "catppuccin_mocha"
+        // dconf scheme picks the light/dark variant WITHIN the active family.
+        // Family (mode) is chosen manually via setMode("catppuccin"|"tokyo").
         var scheme = "dark"
         if (val === "prefer-light") {
-            newMode = "catppuccin_latte"
             scheme = "light"
         }
-        root.setMode(newMode)
+        root.setLight(scheme === "light")
 
         // listen_on unix:/tmp/kitty-rc -> /tmp/kitty-rc-<pid> per instance.
         kittyThemeSwitcher.command = ["sh", "-c",
