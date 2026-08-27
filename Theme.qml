@@ -4,8 +4,10 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Theme with three presets: matugen (default), black, white.
-// Switch via Theme.setMode("black") or Theme.setMode("white").
+// Theme with presets: matugen (default), black, white, tokyonight, catppuccin.
+// Switch via Theme.setMode("tokyonight") / Theme.setMode("catppuccin") etc.
+// Note: mode name is stored in root.mode; the value defaults to "matugen" which
+// falls through to the dark (black) palette.
 Singleton {
     id: root
 
@@ -142,6 +144,68 @@ Singleton {
             launchText      = "#000000"
             launchTextSel   = "#ffffff"
             launchDim       = "#8a9297"
+
+        } else if (root.mode === "tokyonight") {
+            // Tokyo Night (night) — https://github.com/tokyo-night
+            bg              = "#16161e"
+            surface         = "#1a1b26"
+            surfCont        = "#292e42"
+            surfBright      = "#3b4261"
+            textBg          = "#c0caf5"
+            textSurf        = "#a9b1d6"
+            primary         = "#7aa2f7"
+            primCont        = "#3d59a1"
+            onPrim          = "#16161e"
+            secondary       = "#a9b1d6"
+            tertiary        = "#bb9af7"
+            error           = "#f7768e"
+            success         = "#9ece6a"
+            outline         = "#565f89"
+            outlineVar      = "#3b4261"
+            barBg           = "#cc16161e"
+            barText         = "#c0caf5"
+            barHover        = "#3b4261"
+            wsActive        = "#7aa2f7"
+            wsActiveText    = "#16161e"
+            wsInactive      = "#3b4261"
+            wsUrgent        = "#f7768e"
+            launchBg        = "#c016161e"
+            launchSurface   = "#1a1b26"
+            launchSel       = "#7aa2f7"
+            launchText      = "#c0caf5"
+            launchTextSel   = "#16161e"
+            launchDim       = "#565f89"
+
+        } else if (root.mode === "catppuccin") {
+            // Catppuccin mocha — https://github.com/catppuccin
+            bg              = "#11111b"
+            surface         = "#1e1e2e"
+            surfCont        = "#313244"
+            surfBright      = "#45475a"
+            textBg          = "#cdd6f4"
+            textSurf        = "#cdd6f4"
+            primary         = "#89b4fa"
+            primCont        = "#458588"
+            onPrim          = "#1e1e2e"
+            secondary       = "#a6adc8"
+            tertiary        = "#b4befe"
+            error           = "#f38ba8"
+            success         = "#a6e3a1"
+            outline         = "#6c7086"
+            outlineVar      = "#45475a"
+            barBg           = "#cc1e1e2e"
+            barText         = "#cdd6f4"
+            barHover        = "#313244"
+            wsActive        = "#b4befe"
+            wsActiveText    = "#1e1e2e"
+            wsInactive      = "#45475a"
+            wsUrgent        = "#f38ba8"
+            launchBg        = "#c01e1e2e"
+            launchSurface   = "#1e1e2e"
+            launchSel       = "#b4befe"
+            launchText      = "#cdd6f4"
+            launchTextSel   = "#1e1e2e"
+            launchDim       = "#a6adc8"
 
         } else {
             // default: dark mode (same as black)
