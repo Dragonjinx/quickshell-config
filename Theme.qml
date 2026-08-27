@@ -4,9 +4,9 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 
-// Theme with presets: matugen (default), black, white, tokyonight, catppuccin.
-// Switch via Theme.setMode("tokyonight") / Theme.setMode("catppuccin") etc.
-// Dconf auto-switch maps dark -> catppuccin, light -> white.
+// Theme with presets: matugen (default), black, white, tokyonight, catppuccin,
+// tokyonightlight, catppuccinlatte. Switch via Theme.setMode("tokyonight") etc.
+// Dconf auto-switch maps dark -> catppuccin, light -> catppuccinlatte.
 Singleton {
     id: root
 
@@ -206,6 +206,68 @@ Singleton {
             launchTextSel   = "#1e1e2e"
             launchDim       = "#a6adc8"
 
+        } else if (root.mode === "tokyonightlight") {
+            // Tokyo Night day (light) — https://github.com/tokyo-night
+            bg              = "#d0d5e3"
+            surface         = "#e1e2e7"
+            surfCont        = "#c4c8da"
+            surfBright      = "#ffffff"
+            textBg          = "#3760bf"
+            textSurf        = "#6172b0"
+            primary         = "#2e7de9"
+            primCont        = "#b7c1e3"
+            onPrim          = "#ffffff"
+            secondary       = "#6172b0"
+            tertiary        = "#9854f1"
+            error           = "#f52a65"
+            success         = "#587539"
+            outline         = "#848cb5"
+            outlineVar      = "#b4b5b9"
+            barBg           = "#d0d5e3"
+            barText         = "#3760bf"
+            barHover        = "#b7c1e3"
+            wsActive        = "#2e7de9"
+            wsActiveText    = "#ffffff"
+            wsInactive      = "#a8aecb"
+            wsUrgent        = "#f52a65"
+            launchBg        = "#e0d0d5e3"
+            launchSurface   = "#e1e2e7"
+            launchSel       = "#2e7de9"
+            launchText      = "#3760bf"
+            launchTextSel   = "#ffffff"
+            launchDim       = "#848cb5"
+
+        } else if (root.mode === "catppuccinlatte") {
+            // Catppuccin latte (light) — https://github.com/catppuccin
+            bg              = "#dce0e8"
+            surface         = "#eff1f5"
+            surfCont        = "#ccd0da"
+            surfBright      = "#ffffff"
+            textBg          = "#4c4f69"
+            textSurf        = "#4c4f69"
+            primary         = "#1e66f5"
+            primCont        = "#ccd0da"
+            onPrim          = "#ffffff"
+            secondary       = "#5c5f77"
+            tertiary        = "#7287fd"
+            error           = "#d20f39"
+            success         = "#40a02b"
+            outline         = "#7c7f93"
+            outlineVar      = "#bcc0cc"
+            barBg           = "#dce0e8"
+            barText         = "#4c4f69"
+            barHover        = "#ccd0da"
+            wsActive        = "#7287fd"
+            wsActiveText    = "#ffffff"
+            wsInactive      = "#bcc0cc"
+            wsUrgent        = "#d20f39"
+            launchBg        = "#e0eff1f5"
+            launchSurface   = "#eff1f5"
+            launchSel       = "#1e66f5"
+            launchText      = "#4c4f69"
+            launchTextSel   = "#ffffff"
+            launchDim       = "#7c7f93"
+
         } else {
             // default: dark mode (same as black)
             bg              = "#000000"
@@ -284,11 +346,11 @@ Singleton {
 
     function applyDconfValue(val) {
         val = val.trim().replace(/'/g, "")
-        // dark scheme -> catppuccin (dark default); light -> white
+        // dark scheme -> catppuccin (dark default); light -> catppuccinlatte
         var newMode = "catppuccin"
         var scheme = "dark"
         if (val === "prefer-light") {
-            newMode = "white"
+            newMode = "catppuccinlatte"
             scheme = "light"
         }
         root.setMode(newMode)
