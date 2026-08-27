@@ -18,7 +18,7 @@ import QtQuick
 // To add a theme you only write a palette object (its natural colors) and one
 // mapping function — nothing else.
 //
-// Modes: black, white, tokyo_night, catppuccin_mocha (dark default), tokyo_night_light,
+// Modes: tokyo_night, catppuccin_mocha (dark default), tokyo_night_light,
 // catppuccin_latte. Dconf maps dark -> catppuccin_mocha, light -> catppuccin_latte.
 // ============================================================================
 Singleton {
@@ -302,87 +302,14 @@ Singleton {
         launchDim    = p.comment
     }
 
-    // Monochrome black (also matugen default)
-    function _applyMonoDark() {
-        bg           = "#000000"
-        surface      = "#1a1a1a"
-        surfCont     = "#262626"
-        surfBright   = "#333333"
-        textBg       = "#ffffff"
-        textSurf     = "#ffffff"
-        primary      = "#8ecff2"
-        primCont     = "#004d67"
-        onPrim       = "#000000"
-        secondary    = "#b5c9d7"
-        tertiary     = "#c9c1ea"
-        error        = "#ffb4ab"
-        success      = "#63d297"
-        amber        = "#f0b429"
-        blue         = "#8ecff2"
-        lavender     = "#c0caf5"
-        yellow       = "#e3c200"
-        maroon       = "#d5697c"
-        outline      = "#666666"
-        outlineVar   = "#404040"
-        barBg        = "#cc000000"   // keep original translucent
-        barText      = "#ffffff"
-        barHover     = "#333333"
-        wsActive     = "#ffffff"
-        wsActiveText = "#000000"
-        wsInactive   = "#333333"
-        wsUrgent     = "#ffb4ab"
-        launchBg     = "#f0000000"
-        launchSurface= "#1a1a1a"
-        launchSel    = "#ffffff"
-        launchText   = "#ffffff"
-        launchTextSel= "#000000"
-        launchDim    = "#666666"
-    }
-
-    // Monochrome white
-    function _applyMonoLight() {
-        bg           = "#ffffff"
-        surface      = "#f5f5f5"
-        surfCont     = "#ebebeb"
-        surfBright   = "#e0e0e0"
-        textBg       = "#000000"
-        textSurf     = "#000000"
-        primary      = "#006494"
-        primCont     = "#c2e8ff"
-        onPrim       = "#ffffff"
-        secondary    = "#4a5d68"
-        tertiary     = "#6b62a0"
-        error        = "#ba1a1a"
-        success      = "#1f883d"
-        amber        = "#9a6a00"
-        blue         = "#006494"
-        lavender     = "#6b62a0"
-        yellow       = "#9a6a00"
-        maroon       = "#a4425c"
-        outline      = "#8a9297"
-        outlineVar   = "#c4c7c9"
-        barBg        = "#ccffffff"   // keep original translucent
-        barText      = "#000000"
-        barHover     = "#e0e0e0"
-        wsActive     = "#ffffff"
-        wsActiveText = "#000000"
-        wsInactive   = "#c4c7c9"
-        wsUrgent     = "#ba1a1a"
-        launchBg     = "#f0ffffff"
-        launchSurface= "#f5f5f5"
-        launchSel    = "#333333"
-        launchText   = "#000000"
-        launchTextSel= "#ffffff"
-        launchDim    = "#8a9297"
-    }
+    // Only catppuccin + tokyo themes remain (mono black/white removed).
 
     function applyMode() {
         if (root.mode === "catppuccin_mocha")         root._applyCatppuccin(root.catppuccinMocha)
         else if (root.mode === "catppuccin_latte")    root._applyCatppuccin(root.catppuccinLatte)
         else if (root.mode === "tokyo_night")         root._applyTokyo(root.tokyoNight)
         else if (root.mode === "tokyo_night_light")   root._applyTokyo(root.tokyoDay)
-        else if (root.mode === "white")             root._applyMonoLight()
-        else                                        root._applyMonoDark()  // black + matugen default
+        else                                           root._applyCatppuccin(root.catppuccinMocha) // fallback
     }
 
     Component.onCompleted: applyMode()
