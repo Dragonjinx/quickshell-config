@@ -39,20 +39,20 @@ Item {
     // `pgrep -f '[k]itty'` uses the bracket trick so the guard doesn't match its
     // own `sh -c` command line. Launches only when no kitty is running.
     Process {
-        command: ["sh", "-c", "uwsm app -- kitty"]
+        command: ["uwsm", "app", "--", "kitty"]
         running: true
     }
 
     // --- Tray-dependent apps go here (after host registration) ---
     Process {
         id: keepassxcProc
-        command: ["sh", "-c", "uwsm app -- keepassxc"]
+        command: ["uwsm", "app", "--", "keepassxc"]
         running: false
     }
 
     Process {
         id: mullvadProcess
-        command: ["sh", "-c", "uwsm app -- mullvad-gui"]
+        command: ["uwsm", "app", "--", "mullvad-gui"]
         running: false
     }
 
