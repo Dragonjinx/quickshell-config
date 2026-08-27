@@ -6,13 +6,12 @@ import QtQuick
 
 // Theme with presets: matugen (default), black, white, tokyonight, catppuccin.
 // Switch via Theme.setMode("tokyonight") / Theme.setMode("catppuccin") etc.
-// Note: mode name is stored in root.mode; the value defaults to "matugen" which
-// falls through to the dark (black) palette.
+// Dconf auto-switch maps dark -> catppuccin, light -> white.
 Singleton {
     id: root
 
-    // Current mode name
-    property string mode: "matugen"
+    // Current mode name. Dark default is catppuccin.
+    property string mode: "catppuccin"
 
     // Color properties (update when mode changes)
     property color bg
@@ -162,7 +161,7 @@ Singleton {
             success         = "#9ece6a"
             outline         = "#565f89"
             outlineVar      = "#3b4261"
-            barBg           = "#cc16161e"
+            barBg           = "#16161e"
             barText         = "#c0caf5"
             barHover        = "#3b4261"
             wsActive        = "#7aa2f7"
@@ -193,7 +192,7 @@ Singleton {
             success         = "#a6e3a1"
             outline         = "#6c7086"
             outlineVar      = "#45475a"
-            barBg           = "#cc1e1e2e"
+            barBg           = "#1e1e2e"
             barText         = "#cdd6f4"
             barHover        = "#313244"
             wsActive        = "#b4befe"
@@ -285,7 +284,8 @@ Singleton {
 
     function applyDconfValue(val) {
         val = val.trim().replace(/'/g, "")
-        var newMode = "black"
+        // dark scheme -> catppuccin (dark default); light -> white
+        var newMode = "catppuccin"
         var scheme = "dark"
         if (val === "prefer-light") {
             newMode = "white"
