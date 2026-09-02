@@ -28,7 +28,7 @@ Singleton {
     id: root
 
     // Current theme FAMILY. Dark/light is selected by `light` (from dconf).
-    property string mode: "tokyo"
+    property string mode: "catppuccin"
 
     // Light or dark variant of the active family (driven by dconf scheme).
     property bool light: false
@@ -279,8 +279,8 @@ Singleton {
         wsActiveText = p.base
         wsInactive   = p.surface1
         wsUrgent     = p.red
-        launchBg     = root._alpha(p.base, 0.72)
-        launchSurface= p.base
+        launchBg     = p.base
+        launchSurface= p.surface0
         launchSel    = p.mauve
         launchText   = p.text
         launchTextSel= p.base
@@ -322,8 +322,8 @@ Singleton {
         wsActiveText = p.bg_dark
         wsInactive   = p.bg_highlight
         wsUrgent     = p.red
-        launchBg     = root._alpha(p.bg_dark, 0.72)
-        launchSurface= p.bg
+        launchBg     = p.bg_dark
+        launchSurface= p.bg_highlight
         launchSel    = p.blue
         launchText   = p.fg
         launchTextSel= p.bg_dark
