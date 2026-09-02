@@ -54,6 +54,17 @@ Singleton {
             }
         }
 
+        // Guard: the wrapper can be stuck at 0 while genuinely connected over wifi
+        // (empty access-point table — see signalProbe). Fall back to an nmcli probe,
+        // rate-limited so a permanently stuck model polls at most ~4×/min.
+        if (any && wifi && sig === 0) {
+            if (Date.now() - root.lastProbe > 15000) {
+                root.lastProbe = Date.now()
+                signalProbe.running = true
+            }
+            sig = root.fallbackSignalPct
+        }
+
         root.connected = any
         root.isWifi = wifi
         root.signalPct = sig
@@ -86,6 +97,36 @@ Singleton {
         stdout: SplitParser {
             onRead: function(line) {
                 root.airplaneMode = line.trim() === "yes"
+            }
+        }
+    }
+
+    // ── Signal fallback probe (stuck-AP-table guard) ─────
+    // quickshell 0.3.0's NM wrapper hard-codes signalStrength to 0 when the SSID's
+    // access-point table is empty (APs are only fetched once via GetAllAccessPoints at
+    // device creation; a dropped event at login strands the table empty forever while
+    // the connection itself stays healthy). When we're connected over wifi but the
+    // model says 0 — the exact stuck signature — probe NM directly for the in-use
+    // signal and use it. Rate-limited; the model heals itself on the next device
+    // re-add and takes over again automatically.
+    property int fallbackSignalPct: 0
+    property int lastProbe: 0
+
+    Process {
+        id: signalProbe
+        command: ["nmcli", "-t", "-f", "IN-USE,SIGNAL", "device", "wifi"]
+        running: false
+
+        stdout: SplitParser {
+            onRead: function(line) {
+                if (line.trim().startsWith("*")) {
+                    var parts = line.trim().split(":")
+                    if (parts.length >= 2) {
+                        root.fallbackSignalPct = parseInt(parts[1])
+                        if (isNaN(root.fallbackSignalPct)) root.fallbackSignalPct = 0
+                        root.refresh()
+                    }
+                }
             }
         }
     }
