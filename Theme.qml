@@ -345,6 +345,8 @@ Singleton {
             // unknown family -> fall back to catppuccin dark
             root._applyCatppuccin(root.catppuccinMocha)
         }
+
+        root.syncGreylineTheme()
     }
 
     Component.onCompleted: applyMode()
@@ -386,6 +388,33 @@ Singleton {
     Process {
         id: kittyThemeSwitcher
         running: false
+    }
+
+    // Persistent process to sync greyline wallpaper theme with the active
+    // quickshell theme (family + light/dark).
+    Process {
+        id: greylineThemeSwitcher
+        running: false
+    }
+
+    function greylineThemeName() {
+        var name
+        if (root.mode === "catppuccin") {
+            name = root.light ? "catppuccin-latte" : "catppuccin-mocha"
+        } else if (root.mode === "tokyo") {
+            name = root.light ? "tokyo-night-light" : "tokyo-night-dark"
+        } else {
+            // unknown family -> greyline catppuccin dark
+            name = "catppuccin-mocha"
+        }
+        return name
+    }
+
+    function syncGreylineTheme() {
+        greylineThemeSwitcher.command = ["sh", "-c",
+            "$HOME/.nix-profile/bin/greyline config set theme " + root.greylineThemeName() +
+            " >/dev/null 2>&1"]
+        greylineThemeSwitcher.running = true
     }
 
     function applyDconfValue(val) {
