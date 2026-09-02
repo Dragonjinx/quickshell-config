@@ -33,6 +33,11 @@ Singleton {
     // Light or dark variant of the active family (driven by dconf scheme).
     property bool light: false
 
+    // Last greyline theme we synced — lets us skip redundant re-renders when
+    // applyMode() fires again with the same family+scheme (e.g. Component.onCompleted
+    // + the initial dconf read both run at startup).
+    property string _lastGreylineTheme: ""
+
     // ────────────────────────────────────────────────────────────────────────
     // 1. SEMANTIC ROLES — widgets reference these names only.
     //    (Do not rename/reorder; widget files depend on them.)
@@ -414,8 +419,13 @@ Singleton {
     }
 
     function syncGreylineTheme() {
+        var target = root.greylineThemeName()
+        // Skip if nothing changed: avoids a wasted ~1.7s full-res render when
+        // applyMode() fires again with the same family+scheme.
+        if (root._lastGreylineTheme === target) return
+        root._lastGreylineTheme = target
         greylineThemeSwitcher.command = ["sh", "-c",
-            "$HOME/.nix-profile/bin/greyline config set theme " + root.greylineThemeName() +
+            "$HOME/.nix-profile/bin/greyline config set theme " + target +
             " >/dev/null 2>&1 && systemctl --user start greyline.service"]
         greylineThemeSwitcher.running = true
     }
