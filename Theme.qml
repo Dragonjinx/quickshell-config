@@ -392,6 +392,9 @@ Singleton {
 
     // Persistent process to sync greyline wallpaper theme with the active
     // quickshell theme (family + light/dark).
+    // Reuses greyline's own one-shot render unit (greyline.service, the same
+    // Type=oneshot service the systemd timer activates every minute) so the
+    // wallpaper updates immediately instead of waiting for the next tick.
     Process {
         id: greylineThemeSwitcher
         running: false
@@ -413,7 +416,7 @@ Singleton {
     function syncGreylineTheme() {
         greylineThemeSwitcher.command = ["sh", "-c",
             "$HOME/.nix-profile/bin/greyline config set theme " + root.greylineThemeName() +
-            " >/dev/null 2>&1"]
+            " >/dev/null 2>&1 && systemctl --user start greyline.service"]
         greylineThemeSwitcher.running = true
     }
 
