@@ -58,6 +58,17 @@ Item {
     // as Dash.qml's historyVersion).
     property int aliasVersion: 0
 
+    // Tab-complete state: Tab fills the field with the highlighted entry
+    // (keeping the ":" prefix in alias mode). Escape NEVER closes the launcher
+    // (toggle it with the Super global): it either reverts an active tab-complete
+    // or clears the buffer. A completion counts as revertible only while the
+    // field still holds exactly what the last Tab produced — a manual edit
+    // invalidates it WITHOUT relying on onTextChanged (whose delivery QtQuick
+    // defers until after the handler).
+    property bool autoCompleteActive: false
+    property string textBeforeComplete: ""
+    property string completedText: ""
+
     Process {
         id: aliasDump
         command: [root.qsScriptsDir + "/qs-alias-dump.sh"]
@@ -198,6 +209,35 @@ Item {
             list.positionViewAtIndex(selectedIndex, ListView.Contain)
         }
 
+        function tabComplete() {
+            var entries = launcherWindow.currentList
+            if (entries.length === 0) return
+            var entry = entries[launcherWindow.selectedIndex]
+            if (!entry || !entry.name || entry.name.length === 0) return
+            var completed = (root.aliasMode ? ":" : "") + entry.name
+            if (searchField.text !== completed) {
+                if (!root.autoCompleteActive) root.textBeforeComplete = searchField.text
+                searchField.text = completed
+                root.completedText = completed
+                root.autoCompleteActive = true
+            }
+        }
+
+        function handleEscape() {
+            if (root.autoCompleteActive && searchField.text === root.completedText) {
+                // Revert the tab-complete to the pre-Tab text.
+                root.autoCompleteActive = false
+                var restored = root.textBeforeComplete
+                root.textBeforeComplete = ""
+                root.completedText = ""
+                searchField.text = restored
+            } else {
+                // No revertible completion — clear the buffer.
+                searchField.text = ""
+            }
+            // Never closes the launcher; toggle with the Super global instead.
+        }
+
         function activateSelection() {
             if (root.aliasMode) {
                 var aliases = root.filteredAliases
@@ -218,7 +258,8 @@ Item {
         Item {
             anchors.fill: parent
             Keys.onPressed: function(event) {
-                if (event.key === Qt.Key_Escape) close()
+                if (event.key === Qt.Key_Escape) { launcherWindow.handleEscape(); event.accepted = true }
+                if (event.key === Qt.Key_Tab)   launcherWindow.tabComplete()
                 if (event.key === Qt.Key_Down)    launcherWindow.moveSelection(1)
                 if (event.key === Qt.Key_Up)      launcherWindow.moveSelection(-1)
                 if (event.key === Qt.Key_Return)  launcherWindow.activateSelection()
@@ -270,7 +311,10 @@ Item {
                             }
 
                             Keys.onPressed: function(event) {
-                                if (event.key === Qt.Key_Escape) root.close()
+                                if (event.key === Qt.Key_Escape) { launcherWindow.handleEscape(); event.accepted = true }
+                                if (event.key === Qt.Key_Tab) {
+                                    launcherWindow.tabComplete(); event.accepted = true
+                                }
                                 if (event.key === Qt.Key_Down) {
                                     launcherWindow.moveSelection(1); event.accepted = true
                                 }
