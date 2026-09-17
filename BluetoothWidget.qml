@@ -176,7 +176,7 @@ Item {
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onClicked: {
-            Quickshell.execDetached(["kitty", "-e", "bluetoothctl"])
+            Quickshell.execDetached(["uwsm-app", "--", "kitty", "--title", "bluetui", "-e", "bluetui"])
         }
     }
 }

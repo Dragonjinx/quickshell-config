@@ -127,7 +127,7 @@ Item {
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onClicked: {
-            Quickshell.execDetached(["kitty", "-e", "nmtui"])
+            Quickshell.execDetached(["uwsm-app", "--", "kitty", "-e", "nmtui"])
         }
     }
 }

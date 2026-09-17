@@ -155,7 +155,7 @@ Item {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         onClicked: {
-            Quickshell.execDetached(["kitty", "-e", "btop"])
+            Quickshell.execDetached(["uwsm-app", "--", "kitty", "-e", "btop"])
         }
     }
 }
